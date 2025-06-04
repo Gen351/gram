@@ -494,7 +494,7 @@ body {
 .send-icon::before { content: '✈️'; } /* Changed to paper plane for send */
 
 /* --- Responsive Adjustments --- */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .messenger-container {
         width: 100vw;
         height: 100vh;

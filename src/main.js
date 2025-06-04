@@ -171,28 +171,66 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function fetchConversationParticipantUsername(conversationID, currentUserId) {
+        try {
+            const { data, error } = await supabase
+                .from('conversation_participant')
+                .select('participant')
+                .eq('conversation_id', conversationID);
+
+            if (error || !data) {
+                console.error("Error fetching participants:", error);
+                return null;
+            }
+
+            // Get the ID of the other participant
+            const other = data.find(p => p.participant !== currentUserId);
+            const otherParticipantId = other?.participant;
+
+            if (!otherParticipantId) return null;
+
+            const { data: profileData, error: err } = await supabase
+                .from('profile')
+                .select('username')
+                .eq('auth_id', otherParticipantId)
+                .single();
+
+            if (err || !profileData) {
+                console.error("Error fetching username:", err);
+                return null;
+            }
+
+            return profileData.username;
+
+        } catch (fetchError) {
+            console.error('Error:', fetchError.message);
+            return null;
+        }
+    }
+
     async function loadConversations(userId) {
         if (!convoList) return;
 
         const conversations = await fetchConversationsForUser(userId);
-        convoList.innerHTML = ''; // Clear existing list
+        convoList.innerHTML = '';
 
         if (conversations.length === 0) {
             convoList.innerHTML = '<p style="padding: 15px; color: var(--text-dark);">No conversations yet. Start a new chat!</p>';
             return;
         }
 
-        conversations.forEach(convo => {
+        for (const convo of conversations) {
             const chatItem = document.createElement('div');
             chatItem.classList.add('chat-item');
             chatItem.dataset.chatId = convo.id;
 
-            const displayName = convo.displayName;
+            // ✅ Await the username
+            const displayName = await fetchConversationParticipantUsername(convo.id, userId);
 
             chatItem.innerHTML = `
                 <div class="chat-avatar"></div>
                 <div class="chat-info">
-                    <div class="chat-name">${displayName}</div>
+                    <div class="chat-name">${displayName || 'Unknown User'}</div>
                     <div class="last-message">Tap to open chat...</div>
                 </div>
             `;
@@ -206,16 +244,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const chosenConversationId = chatItem.dataset.chatId;
                 const chosenConversationName = displayName;
-                console.log('Chosen Conversation ID:', chosenConversationId);
 
                 if (recipientNameElement) {
                     recipientNameElement.textContent = chosenConversationName;
                 }
-                // Call the message loading function for the chosen conversation
+
                 await loadConversationMessages(chosenConversationId);
             });
-        });
+        }
     }
+
 
     // --- Profile Dropdown Toggle Logic ---
     if (profilePicContainer && profileDropdown) {

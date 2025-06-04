@@ -100,7 +100,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 initial = userEmail.charAt(0).toUpperCase();
             }
             profileInitialSpan.textContent = initial;
-            profilePicContainer.style.backgroundImage = '';
+            profilePicContainer.innerHTML = `
+                        <img src="https://ui-avatars.com/api/?name=${data.username}
+                            &size=50
+                            &background=${data.username.charCodeAt(0) * 6500}
+                            &color=${data.username.charCodeAt(data.username.length - 1) * 900}
+                            &length=3
+                            &rounded=true
+                            &bold=true
+                        ">    
+                    `;
 
             return data; // Return the profile data including the ID
         } catch (fetchError) {
@@ -170,6 +179,28 @@ document.addEventListener('DOMContentLoaded', () => {
             return []; // Return an empty array on error
         }
     }
+    
+    async function fetchRecentMessages(conversationID, count = 1) {
+        try {
+            const { data, error } = await supabase
+                .from('message')
+                .select('*')
+                .eq('conversation_id', conversationID)
+                .order('created_at', { ascending: false })
+                .limit(count);
+
+            if (error || !data) {
+                console.error("Error fetching messages:", error);
+                return [];
+            }
+
+            return data;
+
+        } catch (fetchError) {
+            console.error("Error in fetchRecentMessages:", fetchError.message);
+            return [];
+        }
+    }
 
     async function fetchConversationParticipantUsername(conversationID, currentUserId) {
         try {
@@ -226,12 +257,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // ✅ Await the username
             const displayName = await fetchConversationParticipantUsername(convo.id, userId);
+            const recentMessages = await fetchRecentMessages(convo.id);
+            const lastMessageText = recentMessages.length > 0 ? recentMessages[0].contents : 'Tap to open chat...';
 
             chatItem.innerHTML = `
-                <div class="chat-avatar"></div>
+                <div class="chat-avatar">
+                    <div class="char-avatar-wrapper">
+                        <img src="https://ui-avatars.com/api/?name=${displayName}
+                            &size=50
+                            &background=${displayName.charCodeAt(0) * 6500}
+                            &color=${displayName.charCodeAt(displayName.length - 1) * 900}
+                            &length=3
+                            &rounded=true
+                            &bold=true
+                        ">
+                    </div>
+                </div>
                 <div class="chat-info">
                     <div class="chat-name">${displayName || 'Unknown User'}</div>
-                    <div class="last-message">Tap to open chat...</div>
+                    <div class="last-message">${lastMessageText}</div>
                 </div>
             `;
             convoList.appendChild(chatItem);
@@ -247,6 +291,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (recipientNameElement) {
                     recipientNameElement.textContent = chosenConversationName;
+                    
+                    const recipientAvatar = document.querySelector('.recipient-avatar');
+                    recipientAvatar.innerHTML = `
+                                                <img src="https://ui-avatars.com/api/?name=${displayName}
+                                                    &size=40
+                                                    &background=${displayName.charCodeAt(0) * 6500}
+                                                    &color=${displayName.charCodeAt(displayName.length - 1) * 900}
+                                                    &length=3
+                                                    &rounded=true
+                                                    &bold=true
+                                                ">
+                                                `;
                 }
 
                 await loadConversationMessages(chosenConversationId);
@@ -453,37 +509,41 @@ async function getProfiles(searchInput) {
 // Now based on conversation_participant table
 async function findExistingDirectConversation(user1Id, user2Id) {
     try {
-        // 1) Find conversation IDs where user1 participates
+        // Step 1: Find conversation IDs where user1 participates
         const { data: user1Convos, error: err1 } = await supabase
             .from('conversation_participant')
             .select('conversation_id')
             .eq('participant', user1Id);
 
-        if (err1) throw err1;
+        if (err1 || !user1Convos) throw err1 || new Error("No conversations for user1");
+
         const user1Ids = user1Convos.map(r => r.conversation_id);
         if (user1Ids.length === 0) return null;
 
-        // 2) Find conversation IDs where user2 participates AND conversation_id is in user1Ids
+        // Step 2: Filter conversations where user2 also participates
         const { data: user2Convos, error: err2 } = await supabase
             .from('conversation_participant')
             .select('conversation_id')
             .eq('participant', user2Id)
             .in('conversation_id', user1Ids);
 
-        if (err2) throw err2;
-        const commonIds = user2Convos.map(r => r.conversation_id);
-        if (commonIds.length === 0) return null;
+        if (err2 || !user2Convos) throw err2 || new Error("No common conversations");
 
-        // 3) Fetch the conversation details for those IDs, but only type='direct'
-        const { data: convos, error: err3 } = await supabase
+        const commonConversationIds = user2Convos.map(r => r.conversation_id);
+        if (commonConversationIds.length === 0) return null;
+
+        // Step 3: Get the conversation where type is 'direct'
+        const { data: directConvos, error: err3 } = await supabase
             .from('conversation')
             .select('id, type, conversation_name')
-            .in('id', commonIds)
+            .in('id', commonConversationIds)
             .eq('type', 'direct');
 
         if (err3) throw err3;
 
-        return convos.length > 0 ? convos[0] : null;
+        // Return the first matched direct conversation (if any)
+        return directConvos?.[0] || null;
+
     } catch (findError) {
         console.error("Error in findExistingDirectConversation:", findError.message);
         return null;
@@ -519,35 +579,58 @@ chatSearch.addEventListener('keypress', async (event) => { // Mark event listene
                 resultItem.dataset.username = result.username;      // Store username for easy access
 
                 resultItem.innerHTML = `
-                    <div class="chat-avatar"></div>
+                    <div class="chat-avatar">
+                        <img src="https://ui-avatars.com/api/?name=${result.username}
+                            &size=50
+                            &background=${result.username.charCodeAt(0) * 6500}
+                            &color=${result.username.charCodeAt(result.username.length - 1) * 900}
+                            &length=3
+                            &rounded=true
+                            &bold=true
+                        ">
+                    </div>
                     <div class="chat-info">
                         <div class="chat-name">${result.username || 'No Username'}</div>
                     </div>
                 `;
 
-                searchResultsContainer.appendChild(resultItem);
-
-                resultItem.addEventListener('click', async () => { // Make click handler async
+                resultItem.addEventListener('click', async () => {
                     const targetUserAuthId = result.auth_id;
                     const targetUsername = result.username || 'Unknown User';
 
                     try {
-                        // First, try to find an existing direct conversation
-                        // between the current user and the target user.
+                        // Step 1: Check for existing direct conversation
                         const existingConversation = await findExistingDirectConversation(currentSessionUserId, targetUserAuthId);
-
                         let conversationIdToLoad;
-                        let conversationNameToLoad;
 
                         if (existingConversation) {
                             console.log("Found existing direct conversation:", existingConversation.id);
                             conversationIdToLoad = existingConversation.id;
-                            conversationNameToLoad = existingConversation.conversation_name || `Chat with ${targetUsername}`;
-                        } else {
-                            // No existing direct conversation found, create a new one.
-                            console.log("No existing direct conversation found, creating a new one...");
 
-                            // 1) Create the new conversation
+                            const chosenConversationId = existingConversation.id;
+                            const displayName = result.username;
+
+                            if (recipientNameElement) {
+                                recipientNameElement.textContent = displayName;
+                                
+                                const recipientAvatar = document.querySelector('.recipient-avatar');
+                                recipientAvatar.innerHTML = `
+                                                            <img src="https://ui-avatars.com/api/?name=${displayName}
+                                                                &size=40
+                                                                &background=${displayName.charCodeAt(0) * 6500}
+                                                                &color=${displayName.charCodeAt(displayName.length - 1) * 900}
+                                                                &length=3
+                                                                &rounded=true
+                                                                &bold=true
+                                                            ">
+                                                            `;
+                            }
+                            await loadConversationMessages(chosenConversationId);
+
+                        } else {
+                            // Step 2: Create new direct conversation
+                            console.log("No existing conversation. Creating a new one...");
+
                             const { data: newConvo, error: createConvoError } = await supabase
                                 .from('conversation')
                                 .insert({
@@ -557,43 +640,40 @@ chatSearch.addEventListener('keypress', async (event) => { // Mark event listene
                                 .select('id, conversation_name')
                                 .single();
 
-                            if (createConvoError) {
-                                throw createConvoError;
-                            }
+                            if (createConvoError) throw createConvoError;
 
                             conversationIdToLoad = newConvo.id;
                             conversationNameToLoad = newConvo.conversation_name;
-                            console.log("New direct conversation created:", conversationIdToLoad);
 
-                            // 2) Add both users as participants
+                            // Step 3: Add both participants
                             const { error: participantError } = await supabase
                                 .from('conversation_participant')
                                 .insert([
                                     { participant: currentSessionUserId, conversation_id: conversationIdToLoad },
-                                    { participant: targetUserAuthId,  conversation_id: conversationIdToLoad }
+                                    { participant: targetUserAuthId, conversation_id: conversationIdToLoad }
                                 ]);
 
-                            if (participantError) {
-                                throw participantError;
-                            }
+                            if (participantError) throw participantError;
+
+                            console.log("New direct conversation created:", conversationIdToLoad);
+                            
+                            // Load messages from this conversation
+                            await loadConversationMessages(conversationIdToLoad);
                         }
 
-                        // After creating/finding, load its messages
-                        if (recipientNameElement) {
-                            recipientNameElement.textContent = conversationNameToLoad;
-                        }
-                        await loadConversationMessages(conversationIdToLoad);
 
-                        // Optional: Close search results and refresh conversation list
+                        // Step 5: Close search and refresh convo list
                         searchResultsContainer.style.display = 'none';
-                        chatSearch.value = ''; // Clear search bar
-                        await loadConversations(currentSessionUserId); // Refresh the main convo list
+                        chatSearch.value = '';
 
                     } catch (error) {
                         console.error("Error creating/opening direct conversation:", error.message);
                         alert("Failed to start direct conversation. Please try again.");
                     }
                 });
+
+
+                searchResultsContainer.appendChild(resultItem);
             });
         } else {
             searchResultsContainer.innerHTML = ''; // Clear results if search input is empty

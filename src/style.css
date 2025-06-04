@@ -230,7 +230,7 @@ body {
 }
 
 .chat-item.active {
-    background-color: rgba(0, 132, 255, 0.2); /* Light blue for active chat */
+    background-color: rgba(1, 82, 158, 0.776); /* Light blue for active chat */
 }
 
 .chat-item .chat-avatar {

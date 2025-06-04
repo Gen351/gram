@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messenger Clone</title>
+    <link rel="stylesheet" href="/src/style.css">
+    </head>
+<body>
+    <div class="messenger-container">
+        <div class="left-panel">
+            <div class="header">
+                <div class="profile-wrapper" style="position: relative;">
+                    <div class="profile-pic" id="profilePicContainer">
+                        <span id="profile-initial">A</span>
+                    </div>
+                    <div id="profile-dropdown" class="dropdown-menu">
+                        <button id="logout-button">Logout</button>
+                    </div>
+                </div>
+                <div class="search-things">
+                    <div class="search-bar">
+                        <input type="text" placeholder="Search Messenger" id="search">
+                    </div>
+                    <div class="search-results">
+                        
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="icon-button new-chat-icon" id="new-chat-button"></button>
+                </div>
+            </div>
+            <div class="chats-list">
+                <!-- Insert conversations here -->
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="conversation-header">
+                <div class="recipient-info">
+                    <div class="recipient-avatar"></div>
+                    <div class="recipient-name">Conversation</div>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-button search-icon"></button>
+                    <button class="icon-button info-icon"></button>
+                </div>
+            </div>
+            
+            <div class="message-area">
+                <!-- the messages here -->
+            </div>
+            
+            <div class="message-input-area">
+                <button class="icon-button attach-icon"></button>
+                <button class="icon-button camera-icon"></button>
+                <input type="text" placeholder="Aa" id="message-typed">
+                <button class="icon-button send-icon"></button>
+                <button class="icon-button like-icon"></button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

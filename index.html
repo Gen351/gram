@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login to Messenger</title>
+    <link rel="stylesheet" href="/src/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <h1 class="login-title">Welcome to Messenger</h1>
+            <p class="login-subtitle" id="form-subtitle">Sign in to your account</p>
+
+            <form id="auth-form" class="login-form">
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="your@example.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" id="authBtn" class="login-button primary-button">Sign In</button>
+            </form>
+
+            <p class="toggle-mode-text">
+                <span id="toggle-prompt">Don't have an account?</span>
+                <button type="button" id="toggleAuthModeBtn" class="toggle-button">Sign Up</button>
+            </p>
+
+            <p id="auth-message" class="auth-message"></p>
+        </div>
+    </div>
+
+    <script type="module" src="/src/login.js"></script>
+</body>
+</html>

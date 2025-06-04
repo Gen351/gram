@@ -1,0 +1,616 @@
+/* General Resets and Variables */
+:root {
+    /* Color Palette */
+    --bg-primary: #1c1e21; /* Darker background for panels/main container */
+    --bg-secondary: #2a9d8f; /* Slightly lighter background for headers, input areas */
+    --bg-tertiary: #3a3b3c; /* For message bubbles, search input */
+    --text-light: #e4e6eb; /* Main light text color */
+    --text-dark: #b0b3b8; /* Secondary text color, placeholders */
+    --accent-blue: #0084ff; /* Primary accent color for active states, sent messages */
+    --border-color: #3e4042; /* Subtle borders and dividers */
+    --discord-purple: #5865F2; /* A common Discord accent purple */
+    --discord-dark-bubble: #36393f; /* A common Discord received message background */
+
+
+    /* Scrollbar Colors */
+    --scrollbar-thumb: #5f6164;
+    --scrollbar-track: #2f3133;
+
+    /* Font & Spacing */
+    --font-family-base: 'Inter', Arial, sans-serif;
+    --border-radius-sm: 6px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 20px; /* For input fields, etc. */
+}
+
+/* Base styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family-base);
+    background-color: var(--bg-primary);
+    color: var(--text-light);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden; /* Prevent body scroll if content fits */
+}
+
+/* --- Messenger Container --- */
+.messenger-container {
+    display: flex;
+    width: 95vw;
+    height: 95vh;
+    max-width: 1400px;
+    max-height: 900px;
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius-md);
+    overflow: hidden; /* Ensures child elements respect border-radius */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Left Panel (Chat List) --- */
+.left-panel {
+    flex: 0 0 350px; /* Fixed width for larger screens */
+    min-width: 280px; /* Minimum width for smaller desktop/tablet */
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-secondary);
+}
+
+.left-panel .header {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Profile Picture & Dropdown */
+.left-panel .header .profile-pic {
+    position: relative; /* Crucial: Establishes positioning context for absolute dropdown */
+    width: 40px;
+    height: 40px;
+    background-color: var(--accent-blue); /* Default background for initials */
+    color: var(--text-light);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    overflow: hidden; /* Ensures initials stay within circle */
+}
+
+.left-panel .header .profile-pic .dropdown-menu {
+    overflow: visible;
+}
+.left-panel .header .profile-pic.active-dropdown {
+    overflow: visible; /* when toggled, allow children to show */
+}
+
+.left-panel .header .profile-pic:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgba(0, 132, 255, 0.3); /* Subtle highlight on hover */
+}
+
+.dropdown-menu {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: calc(100% + 10px); /* Position 10px below profile pic */
+    left: 0; /* Align to the left of the profile pic */
+    background-color: var(--bg-primary); /* Darker background for dropdown */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    z-index: 2000; /* Higher z-index to ensure it's on top */
+    min-width: 180px; /* More generous width */
+    overflow: hidden; /* For rounded corners on content */
+    opacity: 0; /* For fade-in effect */
+    transform: translateY(-10px); /* For slide-down effect */
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+    pointer-events: none; /* Prevents interaction when hidden */
+}
+
+.dropdown-menu.active {
+    display: block; /* Make it block to enable transitions */
+    opacity: 1; /* Fade in */
+    transform: translateY(0); /* Slide down */
+    pointer-events: all; /* Allow interaction */
+}
+
+.dropdown-menu button {
+    display: block;
+    width: 100%;
+    padding: 12px 15px; /* More padding for better click area */
+    text-align: left;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1em;
+    color: var(--text-light);
+    transition: background-color 0.15s ease;
+}
+
+.dropdown-menu button:hover {
+    background-color: var(--border-color);
+}
+
+/* Search Bar */
+.left-panel .header .search-bar {
+    flex-grow: 1;
+}
+
+.left-panel .header .search-bar input {
+    width: 100%;
+    padding: 10px 18px; /* More padding for larger touch target */
+    border: none;
+    border-radius: var(--border-radius-lg); /* More rounded */
+    background-color: var(--bg-tertiary);
+    color: var(--text-light);
+    font-size: 0.95em;
+    outline: none;
+}
+
+.left-panel .header .search-bar input::placeholder {
+    color: var(--text-dark);
+}
+
+/* Header Actions (Settings, New Chat) */
+.left-panel .header .actions {
+    display: flex;
+    gap: 5px;
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    color: var(--text-dark);
+    font-size: 1.3em; /* Slightly larger icons */
+    cursor: pointer;
+    padding: 10px; /* Larger hit area */
+    border-radius: 50%;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon-button:hover {
+    background-color: var(--border-color);
+    color: var(--text-light);
+}
+
+/* Chats List */
+.chats-list {
+    flex-grow: 1;
+    overflow-y: auto; /* Enable vertical scroll */
+    padding: 10px 0;
+}
+
+/* Custom Scrollbar for Webkit browsers */
+.chats-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chats-list::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+
+.chats-list::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 10px;
+    border: 2px solid var(--scrollbar-track);
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px; /* More padding */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-radius: var(--border-radius-sm);
+    margin: 0 8px 5px 8px; /* Margin bottom for separation */
+}
+
+.chat-item:last-child {
+    margin-bottom: 0;
+}
+
+.chat-item:hover {
+    background-color: var(--border-color);
+}
+
+.chat-item.active {
+    background-color: rgba(0, 132, 255, 0.2); /* Light blue for active chat */
+}
+
+.chat-item .chat-avatar {
+    width: 50px;
+    height: 50px;
+    background-color: var(--bg-tertiary); /* Placeholder color */
+    border-radius: 50%;
+    margin-right: 12px; /* More spacing */
+    flex-shrink: 0;
+}
+
+.chat-item .chat-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Allows text truncation */
+}
+
+.chat-item .chat-name {
+    font-weight: 600; /* Slightly bolder */
+    color: var(--text-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px; /* Space between name and last message */
+}
+
+.chat-item .last-message {
+    color: var(--text-dark);
+    font-size: 0.85em; /* Slightly smaller */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- Right Panel (Conversation Area) --- */
+.right-panel {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-primary); /* Main chat background */
+}
+
+.conversation-header {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+}
+
+.conversation-header .recipient-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.conversation-header .recipient-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: var(--bg-tertiary); /* Placeholder */
+    border-radius: 50%;
+}
+
+.conversation-header .recipient-name {
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.conversation-header .status {
+    color: var(--text-dark);
+    font-size: 0.8em;
+    margin-left: 5px; /* Space from name */
+}
+
+.conversation-header .header-actions {
+    display: flex;
+    gap: 8px; /* More space between actions */
+}
+
+/* Message Area */
+.message-area {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto; /* Scroll for messages */
+    display: flex;
+    flex-direction: column; /* Stack messages vertically */
+    gap: 10px; /* Gap between messages */
+}
+
+/* Custom Scrollbar for Webkit browsers */
+.message-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.message-area::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+
+.message-area::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 10px;
+    border: 2px solid var(--scrollbar-track);
+}
+
+/* --- MESSAGE BUBBLE STYLES --- */
+/* Base style for all message containers */
+.message {
+    display: flex;
+    flex-direction: column;
+    max-width: 75%;
+    position: relative;
+    min-width: 0;              /* allow this flex child to shrink */
+    overflow-wrap: break-word; /* force long words to wrap */
+}
+
+/* Styles for messages received from others */
+.message.incoming {
+    align-self: flex-start;
+}
+
+/* Styles for messages sent by the current user */
+.message.outgoing {
+    align-self: flex-end; /* Aligns the entire message bubble to the right side of the message-area */
+    flex-direction: row-reverse; /* Reverses the order of items within the flex container: content then avatar */
+}
+
+.message.outgoing .message-timestamp{
+    align-self: flex-end; /* Aligns the entire message bubble to the right side of the message-area */
+    flex-direction: row-reverse; /* Reverses the order of items within the flex container: content then avatar */
+}
+
+/* Avatar styling (if you decide to show avatars next to messages) */
+.message .message-avatar {
+    width: 30px;
+    height: 30px;
+    background-color: var(--bg-tertiary); /* Placeholder background for avatar */
+    border-radius: 50%; /* Makes the avatar circular */
+    flex-shrink: 0; /* Prevents the avatar from shrinking if content is long */
+}
+
+/* Spacing for incoming message avatars */
+.message.incoming .message-avatar {
+    margin-right: 8px; /* Space between avatar and message content */
+}
+
+/* Spacing for outgoing message avatars */
+.message.outgoing .message-avatar {
+    margin-left: 8px; /* Space between message content and avatar (due to row-reverse) */
+}
+
+/* As per your JS, outgoing messages hide the avatar, so this rule is crucial */
+.message.outgoing .message-avatar {
+    display: none; /* Hides the avatar for sent messages */
+}
+
+/* Styling for the message content bubble itself */
+.message .message-content {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 40vw;
+    white-space: pre-wrap;
+    padding: 10px 15px; /* Padding inside the message bubble */
+    border-radius: var(--border-radius-md); /* Apply the medium border-radius defined in :root */
+    line-height: 1.4; /* Improve readability of text */
+    word-wrap: break-word; /* Ensures long words break and wrap to the next line */
+    flex-grow: 1; /* Allows the content to take up available space within its max-width */
+    min-width: 0; /* Prevents content from overflowing if it's a single long word */
+}
+
+/* Background and text color for received messages */
+.message.incoming .message-content {
+    background-color: var(--discord-dark-bubble); /* Use the defined variable for received bubble background */
+    color: var(--text-light); /* Light text on dark background */
+    /* Optional: Adjust border-radius for a "tail" effect */
+    /* border-bottom-left-radius: 4px; */
+}
+
+/* Background and text color for sent messages */
+.message.outgoing .message-content {
+    background-color: var(--discord-purple); /* Use the defined variable for sent bubble background */
+    color: #fff; /* White text on the accent purple background */
+    /* Optional: Adjust border-radius for a "tail" effect */
+    /* border-bottom-right-radius: 4px; */
+}
+
+/* Styling for the sender's name */
+.message .message-sender {
+    font-size: 0.8em; /* Smaller font for sender name */
+    color: var(--text-dark); /* Secondary text color */
+    margin-bottom: 2px; /* Small space below the sender name */
+    display: block; /* Ensures the sender name takes its own line above the content */
+}
+
+/* Align sender name to the right for sent messages */
+.message.outgoing .message-sender {
+    text-align: right;
+}
+
+/* Styling for the message timestamp */
+.message .message-timestamp {
+    font-size: 0.7em; /* Even smaller font for timestamp */
+    color: var(--text-dark); /* Secondary text color */
+    margin-top: 2px; /* Small space above the timestamp */
+    display: block; /* Ensures the timestamp takes its own line */
+}
+
+/* Align timestamp to the right for sent messages */
+.message.outgoing .message-timestamp {
+    text-align: right;
+}
+/* Message Input Area */
+.message-input-area {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+}
+
+.message-input-area .icon-button {
+    color: var(--text-dark);
+    font-size: 1.5em; /* Larger icons in input area */
+    margin: 0 5px; /* Spacing around buttons */
+    padding: 8px; /* Consistent padding for touch */
+}
+
+.message-input-area .icon-button:first-child {
+    margin-left: 0;
+}
+
+.message-input-area .icon-button:last-child {
+    margin-right: 0;
+}
+
+.message-input-area input {
+    flex-grow: 1;
+    padding: 10px 18px;
+    border: none;
+    border-radius: var(--border-radius-lg);
+    background-color: var(--bg-tertiary);
+    color: var(--text-light);
+    font-size: 1em;
+    margin: 0 10px;
+    outline: none;
+}
+
+.message-input-area input::placeholder {
+    color: var(--text-dark);
+}
+
+/* --- Basic Icons (using pseudo-elements for demonstration) --- */
+.settings-icon::before { content: '⚙️'; }
+.new-chat-icon::before { content: '💬'; } /* Changed to chat bubble for "new chat" */
+.search-icon::before { content: '🔍'; }
+.info-icon::before { content: 'ℹ️'; }
+.attach-icon::before { content: '📎'; }
+.camera-icon::before { content: '📸'; }
+.like-icon::before { content: '�'; }
+.send-icon::before { content: '✈️'; } /* Changed to paper plane for send */
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .messenger-container {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0; /* Full screen on mobile */
+        flex-direction: column; /* Stack panels vertically */
+    }
+
+    .left-panel {
+        flex: 0 0 auto; /* Height adapts to content */
+        max-height: 40%; /* Limit initial height of chat list */
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .left-panel .header {
+        padding: 10px;
+    }
+
+    .left-panel .header .search-bar {
+        display: none; /* Hide search bar on smaller screens */
+    }
+
+    .left-panel .header .actions {
+        margin-left: auto; /* Push actions to the right */
+    }
+
+    .left-panel .header .profile-pic {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+
+    .dropdown-menu {
+        top: calc(100% + 5px); /* Adjust dropdown position for smaller profile pic */
+        min-width: 150px;
+    }
+
+    .dropdown-menu button {
+        padding: 10px 12px;
+        font-size: 0.9em;
+    }
+
+    .chats-list {
+        padding: 5px 0;
+    }
+
+    .chat-item {
+        margin: 0 5px 3px 5px; /* Tighter spacing */
+        padding: 10px 12px;
+    }
+
+    .chat-item .chat-avatar {
+        width: 45px;
+        height: 45px;
+        margin-right: 10px;
+    }
+
+    .right-panel {
+        flex-grow: 1; /* Takes remaining height */
+        min-height: 0; /* Allows shrinking */
+    }
+
+    .conversation-header {
+        padding: 10px;
+    }
+
+    .conversation-header .recipient-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .conversation-header .header-actions {
+        gap: 5px;
+    }
+
+    .message-area {
+        padding: 15px;
+        gap: 8px;
+    }
+
+    .message {
+        max-width: 90%; /* Allow messages to be wider */
+    }
+
+    .message-input-area {
+        padding: 8px 10px;
+    }
+
+    .message-input-area input {
+        margin: 0 8px;
+        padding: 8px 15px;
+    }
+
+    .message-input-area .icon-button {
+        font-size: 1.3em;
+        padding: 6px;
+        margin: 0 3px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Minimal changes, mostly relying on 768px adjustments */
+    .left-panel {
+        max-height: 35%; /* Even smaller on very narrow screens if chat list is long */
+    }
+    .left-panel .header .profile-pic {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+    .icon-button {
+        padding: 8px; /* Adjust if needed */
+        font-size: 1.1em;
+    }
+    .message-input-area .icon-button {
+        font-size: 1.2em;
+        padding: 4px;
+    }
+}

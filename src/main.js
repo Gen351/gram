@@ -643,7 +643,7 @@ chatSearch.addEventListener('keypress', async (event) => { // Mark event listene
                             if (createConvoError) throw createConvoError;
 
                             conversationIdToLoad = newConvo.id;
-                            conversationNameToLoad = newConvo.conversation_name;
+                            const conversationNameToLoad = newConvo.conversation_name;
 
                             // Step 3: Add both participants
                             const { error: participantError } = await supabase

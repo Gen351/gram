@@ -377,8 +377,6 @@ async function loadConversationMessages(conversationId) {
         console.error("Message area not found!");
         return;
     }
-
-    
     try {
         // Fetch messages for the given conversation ID, ordered by creation time
         const { data: messages, error } = await supabase

@@ -14,6 +14,27 @@ const recipientNameElement = document.querySelector('.recipient-name'); // Renam
 let currentSessionProfileId = null; // Renamed to avoid confusion and initialized to null
 let currentSessionUserId = null;   // Store the auth.users.id
 
+
+// Message Listener /////////////////////////////////////////////////////////////
+
+const supaChannel = supabase.channel('messages-inserts');
+
+supaChannel
+    .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'message',
+    }, (payload) => {
+        console.log('New message:', payload.new);
+    })
+    .subscribe();
+
+/////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Initial UI setup (if elements exist) ---
     if (recipientNameElement) {

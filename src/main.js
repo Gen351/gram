@@ -15,6 +15,7 @@ const messageArea = document.querySelector('.message-area');
 let currentSessionProfileId = null; // Renamed to avoid confusion and initialized to null
 let currentSessionUserId = null;   // Store the auth.users.id
 let currentConvoId = null;
+let latestChatDate = ''; // store the latest chat date here for compressed displaying
 
 // Message Listener /////////////////////////////////////////////////////////////
 const supaChannel = supabase.channel('messages-inserts');
@@ -25,17 +26,18 @@ supaChannel
         schema: 'public',
         table: 'message',
     }, (payload) => {
-        console.log('New message:', payload.new);
         appendLatestMessage(payload.new);
     })
     .subscribe();
 
 async function appendLatestMessage(messagePayload) {
     if(messagePayload.conversation_id != currentConvoId) {
-        console.message("ERROR: Incorrect Conversation ID");
+        return;
     }
-    loadMessage(messagePayload);
-    messageArea.scrollTop = messageArea.scrollHeight;
+    if(messagePayload.from == currentSessionUserId || messagePayload.to == currentSessionUserId) {
+        loadMessage(messagePayload);
+        messageArea.scrollTop = messageArea.scrollHeight;
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -723,14 +725,29 @@ async function loadMessage(message, message_type = 'direct') {
     const senderName = (message.profile_from?.username || 'Unknown User');   
     const isSenderNameHidden = (message_type == 'direct') ? 'style="display: none;"' : '';
 
-    messageElement.innerHTML = `
-    <div class="message-bubble">
-        <div class="message-sender" ${isSenderNameHidden}>${senderName}</div>
-        <div class="message-content">${message.contents}</div>
-        <div class="message-timestamp">${new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-    </div>
-    `;
+    // Decide to print the date or not
+    let display =  'style=""';
+    let indent = '<pre><br><br></pre>';
+    
+    console.log(new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    if(new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) == latestChatDate) {
+        display = 'style="display: none;"';
+        indent = '';
+    }
 
+    messageElement.innerHTML = `
+        
+        <div class="message-bubble">
+            <div class="message-sender" ${isSenderNameHidden}>${senderName}</div>
+            <div class="message-content">${message.contents}</div>
+            <div class="message-timestamp" ${display}>
+                ${new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                ${indent}
+            </div>
+        </div>
+        `;
+
+    latestChatDate = new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     messageArea.appendChild(messageElement);
 }
 

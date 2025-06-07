@@ -1,26 +1,37 @@
 /* General Resets and Variables */
-:root {
-    /* Color Palette */
-    --bg-primary: #1c1e21; /* Darker background for panels/main container */
-    --bg-secondary: #2a9d8f; /* Slightly lighter background for headers, input areas */
-    --bg-tertiary: #3a3b3c; /* For message bubbles, search input */
-    --text-light: #e4e6eb; /* Main light text color */
-    --text-dark: #b0b3b8; /* Secondary text color, placeholders */
-    --accent-blue: #0084ff; /* Primary accent color for active states, sent messages */
-    --border-color: #3e4042; /* Subtle borders and dividers */
-    --discord-purple: #5865F2; /* A common Discord accent purple */
-    --discord-dark-bubble: #36393f; /* A common Discord received message background */
+/* style.css */
 
+/* === (OPTION 1) REPLACEMENT THEME: "Slate & Sky" === */
+:root {
+    /* Color Palette - Slate & Sky (Modern & Clean) */
+    --bg-primary: #18191A;       /* The very dark background of the main chat panel */
+    --bg-secondary: #242526;     /* The slightly lighter background for the chats list and headers */
+    --bg-tertiary: #3A3B3C;      /* Background for input fields and some hover states */
+    
+    --text-light: #E4E6EB;       /* Primary, bright text for content */
+    --text-dark: #B0B3B8;        /* Secondary, dimmer text for timestamps, placeholders */
+
+    --accent-primary: #0085FF;   /* A vibrant, professional blue for sent messages & active states */
+    --accent-primary-hover: #0072d9; /* A slightly darker blue for hover states */
+    
+    --border-color: #393A3B;     /* Subtle borders and dividers */
+
+    /* Message Bubbles */
+    --incoming-bubble: #3A3B3C;  /* Incoming messages background */
+    --outgoing-bubble: var(--accent-primary); /* Outgoing messages use the primary accent */
+    
+    /* Active Chat Item */
+    --active-chat: #303840;      /* Background for the currently selected chat item */
 
     /* Scrollbar Colors */
     --scrollbar-thumb: #5f6164;
-    --scrollbar-track: #2f3133;
+    --scrollbar-track: var(--bg-secondary);
 
-    /* Font & Spacing */
+    /* Font & Spacing (Unchanged) */
     --font-family-base: 'Inter', Arial, sans-serif;
     --border-radius-sm: 6px;
     --border-radius-md: 12px;
-    --border-radius-lg: 20px; /* For input fields, etc. */
+    --border-radius-lg: 20px;
 }
 
 /* Base styles */
@@ -78,7 +89,7 @@ body {
     position: relative; /* Crucial: Establishes positioning context for absolute dropdown */
     width: 50px;
     height: 50px;
-    background-color: var(--accent-blue); /* Default background for initials */
+    background-color: var(--bg-tertiary); /* Default background for initials */
     color: var(--text-light);
     border-radius: 50%;
     cursor: pointer;
@@ -100,7 +111,7 @@ body {
 
 .left-panel .header .profile-pic:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 0 3px rgba(0, 132, 255, 0.3); /* Subtle highlight on hover */
+    box-shadow: 0 0 0 3px var(--accent-primary-hover);
 }
 
 .dropdown-menu {
@@ -198,11 +209,13 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+
+    opacity: 0.5; /* kinda hide them initially */
+    transition: 0.25s;
 }
 
 .icon-button:hover {
-    background-color: var(--border-color);
-    color: var(--text-light);
+    opacity: 1;
 }
 
 /* Chats List */
@@ -246,7 +259,10 @@ body {
 }
 
 .chat-item.active {
-    background-color: rgba(1, 82, 158, 0.776); /* Light blue for active chat */
+    background-color: var(--active-chat); /* New variable */
+    .chat-name {
+        opacity: 1;
+    }
 }
 
 .chat-item .chat-avatar {
@@ -272,6 +288,8 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     margin-bottom: 2px; /* Space between name and last message */
+
+    opacity: 0.5;
 }
 
 .chat-item .last-message {
@@ -425,18 +443,12 @@ body {
 
 /* Background and text color for received messages */
 .message.incoming .message-content {
-    background-color: var(--discord-dark-bubble); /* Use the defined variable for received bubble background */
-    color: var(--text-light); /* Light text on dark background */
-    /* Optional: Adjust border-radius for a "tail" effect */
-    /* border-bottom-left-radius: 4px; */
+    background-color: var(--incoming-bubble);
+    color: var(--text-light);
 }
-
-/* Background and text color for sent messages */
 .message.outgoing .message-content {
-    background-color: var(--discord-purple); /* Use the defined variable for sent bubble background */
-    color: #fff; /* White text on the accent purple background */
-    /* Optional: Adjust border-radius for a "tail" effect */
-    /* border-bottom-right-radius: 4px; */
+    background-color: var(--outgoing-bubble);
+    color: #fff; 
 }
 
 /* Styling for the sender's name */
@@ -503,16 +515,6 @@ body {
 .message-input-area input::placeholder {
     color: var(--text-dark);
 }
-
-/* --- Basic Icons (using pseudo-elements for demonstration) --- */
-.settings-icon::before { content: '⚙️'; }
-.new-chat-icon::before { content: '💬'; } /* Changed to chat bubble for "new chat" */
-.search-icon::before { content: '🔍'; }
-.info-icon::before { content: 'ℹ️'; }
-.attach-icon::before { content: '📎'; }
-.camera-icon::before { content: '📸'; }
-.like-icon::before { content: '�'; }
-.send-icon::before { content: '✈️'; } /* Changed to paper plane for send */
 
 /* --- Responsive Adjustments --- */
 @media (max-width: 820px) {

@@ -4,8 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Messenger Clone</title>
+
+    <style>
+        /* attach icon */
+        /* camera icon */
+        /* like icon */
+        /* send icon */
+        /* search icon */
+        @import url('https://cdn-uicons.flaticon.com/3.0.0/uicons-bold-rounded/css/uicons-bold-rounded.css');
+    </style>
+
     <link rel="stylesheet" href="/src/style.css">
-    </head>
+
+</head>
 <body>
     <div class="messenger-container">
         <div class="left-panel">
@@ -28,7 +39,9 @@
                 </div>
 
                 <div class="actions">
-                    <button class="icon-button new-chat-icon" id="new-chat-button"></button>
+                    <button class="icon-button" id="new-chat-button">
+                        <i class="fi fi-br-plus"></i>
+                    </button>
                 </div>
             </div>
             <div class="chats-list">
@@ -43,8 +56,12 @@
                     <div class="recipient-name">Conversation</div>
                 </div>
                 <div class="header-actions">
-                    <button class="icon-button search-icon"></button>
-                    <button class="icon-button info-icon"></button>
+                    <button class="icon-button" id="search-icon">
+                        <i class="fi fi-br-search"></i>
+                    </button>
+                    <button class="icon-button" id="info-icon">
+                        <i class="fi fi-br-info"></i>
+                    </button>
                 </div>
             </div>
             
@@ -53,11 +70,22 @@
             </div>
             
             <div class="message-input-area">
-                <button class="icon-button attach-icon"></button>
-                <button class="icon-button camera-icon"></button>
+                <button class="icon-button" id="attch-icon">
+                    <i class="fi fi-br-clip"></i>
+                </button>
+                <button class="icon-button" id="media-icon">
+                    <i class="fi fi-br-picture"></i>
+                </button>
+
                 <input type="text" placeholder="Aa" id="message-typed">
-                <button class="icon-button send-icon"></button>
-                <button class="icon-button like-icon"></button>
+                
+                <button class="icon-button" id="send-icon">
+                    <i class="fi fi-br-paper-plane"></i>
+                </button>
+
+                <button class="icon-button" id="like-icon">
+                    <i class="fi fi-br-heart"></i>
+                </button>
             </div>
         </div>
     </div>

@@ -22,7 +22,7 @@ export function setConversationContext(convoId, myUserId, otherUserId) {
 // Grab DOM elements once:
 // (Make sure these exist in your HTML and aren't recreated later)
 const messageInput = document.getElementById('message-typed');
-const sendButton   = document.querySelector('.send-icon');
+const sendButton   = document.querySelector('#send-icon'); // supposedly a button
 
 if (sendButton && messageInput) {
     sendButton.addEventListener('click',() => {

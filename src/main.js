@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
             profileInitialSpan.textContent = initial;
             profilePicContainer.innerHTML = `
                         <img src="https://ui-avatars.com/api/?name=${data.username}
-                            &size=50
+                            &size=45
                             &background=${data.username.charCodeAt(0) * 6500}
                             &color=${data.username.charCodeAt(data.username.length - 1) * 900}
                             &length=3
@@ -737,7 +737,7 @@ async function loadMessage(message, message_type = 'direct') {
         }
     }
     // --- End: Modify the PREVIOUS message ---
-    
+
     // Now, create the NEW message. Its timestamp will be visible by default.
     const messageElement = document.createElement('div');
     messageElement.dataset.timestamp = message.created_at; // Crucial for the *next* message
@@ -756,7 +756,7 @@ async function loadMessage(message, message_type = 'direct') {
             <div class="message-content">${message.contents}</div>
             <div class="message-timestamp">
                 ${new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                <pre><br><br></pre>
+                <pre><br></pre>
             </div>
         </div>
     `;

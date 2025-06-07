@@ -375,9 +375,14 @@ body {
     flex-direction: row-reverse; /* Reverses the order of items within the flex container: content then avatar */
 }
 
-.message.outgoing .message-timestamp{
+.message.outgoing .message-timestamp {
+    margin-right: 1.5vw;
     align-self: flex-end; /* Aligns the entire message bubble to the right side of the message-area */
     flex-direction: row-reverse; /* Reverses the order of items within the flex container: content then avatar */
+}
+
+.message.incoming .message-timestamp {
+    margin-left: 1.5vw;
 }
 
 /* Avatar styling (if you decide to show avatars next to messages) */

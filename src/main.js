@@ -30,16 +30,13 @@ supaChannel
     })
     .subscribe();
 
-
-
-    async function appendLatestMessage(messagePayload) {
-        
-        if(messagePayload.conversation_id != currentConvoId) {
-            console.message("ERROR: Incorrect Conversation ID");
-        }
-        
-        loadMessage(messagePayload);
+async function appendLatestMessage(messagePayload) {
+    if(messagePayload.conversation_id != currentConvoId) {
+        console.message("ERROR: Incorrect Conversation ID");
     }
+    loadMessage(messagePayload);
+    messageArea.scrollTop = messageArea.scrollHeight;
+}
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -735,7 +732,6 @@ async function loadMessage(message, message_type = 'direct') {
     `;
 
     messageArea.appendChild(messageElement);
-    console.log('Loaded: ', message.contents,);
 }
 
 

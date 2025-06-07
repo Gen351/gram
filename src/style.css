@@ -260,7 +260,7 @@ body {
 
 .chat-item.active {
     background-color: var(--active-chat); /* New variable */
-    .chat-name {
+    .chat-info {
         opacity: 1;
     }
 }
@@ -279,6 +279,8 @@ body {
     display: flex;
     flex-direction: column;
     min-width: 0; /* Allows text truncation */
+
+    opacity: 0.5;
 }
 
 .chat-item .chat-name {
@@ -288,8 +290,6 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     margin-bottom: 2px; /* Space between name and last message */
-
-    opacity: 0.5;
 }
 
 .chat-item .last-message {

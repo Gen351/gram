@@ -15,7 +15,6 @@ const messageArea = document.querySelector('.message-area');
 let currentSessionProfileId = null; // Renamed to avoid confusion and initialized to null
 let currentSessionUserId = null;   // Store the auth.users.id
 let currentConvoId = null;
-let latestChatDate = ''; // store the latest chat date here for compressed displaying
 
 // Message Listener /////////////////////////////////////////////////////////////
 const supaChannel = supabase.channel('messages-inserts');
@@ -705,49 +704,63 @@ document.addEventListener('click', (event) => {
 /////////////////////////////////////////////////////////////////////////////
 
 
-
-
-
-
-
-
 // LOADING SHIYS ///////////////////////////////////////////////////
 
+// src/main.js
+
 async function loadMessage(message, message_type = 'direct') {
+    // --- Start: Modify the PREVIOUS message ---
+    
+    // Get the last message element that was already added to the message area
+    const lastMessageElement = messageArea.lastElementChild;
+
+    // Check if a previous message exists and has a timestamp
+    if (lastMessageElement && lastMessageElement.dataset.timestamp) {
+        const lastMessageTimestamp = lastMessageElement.dataset.timestamp;
+
+        const currentMessageTime = new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const lastMessageTime = new Date(lastMessageTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // If the new message belongs to the same time group as the last one...
+        if (currentMessageTime === lastMessageTime) {
+            // ...find the timestamp on the LAST message and hide it.
+            const lastTimestampElement = lastMessageElement.querySelector('.message-timestamp');
+            if (lastTimestampElement) {
+                lastTimestampElement.style.display = 'none';
+                
+                // Also remove its indent if it had one
+                const preElement = lastTimestampElement.querySelector('pre');
+                if (preElement) {
+                    preElement.style.display = 'none';
+                }
+            }
+        }
+    }
+    // --- End: Modify the PREVIOUS message ---
+    
+    // Now, create the NEW message. Its timestamp will be visible by default.
     const messageElement = document.createElement('div');
-    // Determine if the message is from the current user
+    messageElement.dataset.timestamp = message.created_at; // Crucial for the *next* message
+
     const isSentByCurrentUser = message.from === currentSessionUserId;
-    
-    messageElement.classList.add('message');
-    messageElement.classList.add((isSentByCurrentUser) ? 'outgoing' : 'incoming');
-    
-    // Display sender's name
-    const senderName = (message.profile_from?.username || 'Unknown User');   
+    messageElement.classList.add('message', isSentByCurrentUser ? 'outgoing' : 'incoming');
+
+    const senderName = (message.profile_from?.username || 'Unknown User');
     const isSenderNameHidden = (message_type == 'direct') ? 'style="display: none;"' : '';
 
-    // Decide to print the date or not
-    let display =  'style=""';
-    let indent = '<pre><br><br></pre>';
-    
-    console.log(new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-    if(new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) == latestChatDate) {
-        display = 'style="display: none;"';
-        indent = '';
-    }
-
+    // The new message's timestamp is ALWAYS visible initially.
+    // The indent is also always present initially.
     messageElement.innerHTML = `
-        
         <div class="message-bubble">
             <div class="message-sender" ${isSenderNameHidden}>${senderName}</div>
             <div class="message-content">${message.contents}</div>
-            <div class="message-timestamp" ${display}>
+            <div class="message-timestamp">
                 ${new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                ${indent}
+                <pre><br><br></pre>
             </div>
         </div>
-        `;
+    `;
 
-    latestChatDate = new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     messageArea.appendChild(messageElement);
 }
 

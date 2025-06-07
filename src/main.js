@@ -10,13 +10,13 @@ const profileDropdown = document.getElementById('profile-dropdown');
 const logoutButton = document.getElementById('logout-button');
 const convoList = document.querySelector('.chats-list');
 const recipientNameElement = document.querySelector('.recipient-name'); // Renamed for clarity
+const messageArea = document.querySelector('.message-area');
 
 let currentSessionProfileId = null; // Renamed to avoid confusion and initialized to null
 let currentSessionUserId = null;   // Store the auth.users.id
-
+let currentConvoId = null;
 
 // Message Listener /////////////////////////////////////////////////////////////
-
 const supaChannel = supabase.channel('messages-inserts');
 
 supaChannel
@@ -26,8 +26,20 @@ supaChannel
         table: 'message',
     }, (payload) => {
         console.log('New message:', payload.new);
+        appendLatestMessage(payload.new);
     })
     .subscribe();
+
+
+
+    async function appendLatestMessage(messagePayload) {
+        
+        if(messagePayload.conversation_id != currentConvoId) {
+            console.message("ERROR: Incorrect Conversation ID");
+        }
+        
+        loadMessage(messagePayload);
+    }
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -327,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 await loadConversationMessages(chosenConversationId);
+                currentConvoId = chosenConversationId;
             });
         }
     }
@@ -391,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /////////////////////////////////////////////////////////////////////////////
 // Choosing a conversation functions /////////////////////////////////////////
-const messageArea = document.querySelector('.message-area'); // Assuming you have this element
+
 
 async function loadConversationMessages(conversationId) {
     if (!messageArea) {
@@ -459,30 +472,9 @@ async function loadConversationMessages(conversationId) {
                 return;
             }
             
+            // Loading the message
             messages.forEach(message => {
-                const messageElement = document.createElement('div');
-                // Determine if the message is from the current user
-                const isSentByCurrentUser = message.from === currentSessionUserId;
-                
-                messageElement.classList.add('message');
-                if (isSentByCurrentUser) {
-                    messageElement.classList.add('outgoing');
-                } else {
-                    messageElement.classList.add('incoming');
-                }
-                
-                // Display sender's name (or "You")
-                const senderName = (message.profile_from?.username || 'Unknown User');   
-                const isSenderNameHidden = (message_type == 'direct') ? 'style="display: none;"' : '';
-
-                messageElement.innerHTML = `
-                <div class="message-bubble">
-                    <div class="message-sender" ${isSenderNameHidden}>${senderName}</div>
-                    <div class="message-content">${message.contents}</div>
-                    <div class="message-timestamp">${new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                </div>
-                `;
-                messageArea.appendChild(messageElement);
+                loadMessage(message, message_type);
             });
             
             // Scroll to the bottom of the message area
@@ -712,3 +704,39 @@ document.addEventListener('click', (event) => {
 
 // Search Conversations End /////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+// LOADING SHIYS ///////////////////////////////////////////////////
+
+async function loadMessage(message, message_type = 'direct') {
+    const messageElement = document.createElement('div');
+    // Determine if the message is from the current user
+    const isSentByCurrentUser = message.from === currentSessionUserId;
+    
+    messageElement.classList.add('message');
+    messageElement.classList.add((isSentByCurrentUser) ? 'outgoing' : 'incoming');
+    
+    // Display sender's name
+    const senderName = (message.profile_from?.username || 'Unknown User');   
+    const isSenderNameHidden = (message_type == 'direct') ? 'style="display: none;"' : '';
+
+    messageElement.innerHTML = `
+    <div class="message-bubble">
+        <div class="message-sender" ${isSenderNameHidden}>${senderName}</div>
+        <div class="message-content">${message.contents}</div>
+        <div class="message-timestamp">${new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+    </div>
+    `;
+
+    messageArea.appendChild(messageElement);
+    console.log('Loaded: ', message.contents,);
+}
+
+
+////////////////////////////////////////////////////////////////////

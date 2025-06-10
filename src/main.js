@@ -750,12 +750,15 @@ async function loadMessage(message, message_type = 'direct') {
 
     // The new message's timestamp is ALWAYS visible initially.
     // The indent is also always present initially.
+
+    const msgDate = new Date(message.created_at);
+
     messageElement.innerHTML = `
         <div class="message-bubble">
             <div class="message-sender" ${isSenderNameHidden}>${senderName}</div>
-            <div class="message-content">${message.contents}</div>
+            <div class="message-content" title="${msgDate.toLocaleDateString()}">${message.contents}</div>
             <div class="message-timestamp">
-                ${new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                ${msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 <pre><br></pre>
             </div>
         </div>

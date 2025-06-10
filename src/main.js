@@ -749,8 +749,6 @@ async function loadMessage(message, message_type = 'direct') {
     const isSenderNameHidden = (message_type == 'direct') ? 'style="display: none;"' : '';
 
     // The new message's timestamp is ALWAYS visible initially.
-    // The indent is also always present initially.
-
     const msgDate = new Date(message.created_at);
     const now = new Date();
     // Check if it's the same day

@@ -19,6 +19,7 @@ let currentConvoId = null;
 // Message Listener /////////////////////////////////////////////////////////////
 const supaChannel = supabase.channel('messages-inserts');
 
+// On message
 supaChannel
     .on('postgres_changes', {
         event: 'INSERT',
@@ -29,6 +30,19 @@ supaChannel
     })
     .subscribe();
 
+// On add convo
+// supaChannel
+//     .on('postgres_changes', {
+//         event: 'INSERT',
+//         schema: 'public',
+//         table: 'conversation',
+//     }, (payload) => {
+//         console.log(payload.new);
+//     })
+//     .subscribe();
+
+
+
 async function appendLatestMessage(messagePayload) {
     if(messagePayload.conversation_id != currentConvoId) {
         return;
@@ -38,6 +52,8 @@ async function appendLatestMessage(messagePayload) {
         messageArea.scrollTop = messageArea.scrollHeight;
     }
 }
+
+// async function addAConvo
 
 /////////////////////////////////////////////////////////////////////////////////
 

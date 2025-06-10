@@ -29,8 +29,10 @@ if (sendButton && messageInput) {
         send();
     });
     messageInput.addEventListener('keypress', (e) => {
-        if(e.key === 'Enter') {
+        if(e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
             send();
+            messageInput.style.height = '40px';
         }
     });
 } else {

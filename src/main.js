@@ -730,9 +730,7 @@ async function loadMessage(message, message_type = 'direct') {
                 
                 // Also remove its indent if it had one
                 const preElement = lastTimestampElement.querySelector('pre');
-                if (preElement) {
-                    preElement.style.display = 'none';
-                }
+                if (preElement) { preElement.style.display = 'none'; }
             }
         }
     }
@@ -741,10 +739,8 @@ async function loadMessage(message, message_type = 'direct') {
     // Now, create the NEW message. Its timestamp will be visible by default.
     const messageElement = document.createElement('div');
     messageElement.dataset.timestamp = message.created_at; // Crucial for the *next* message
-
     const isSentByCurrentUser = message.from === currentSessionUserId;
     messageElement.classList.add('message', isSentByCurrentUser ? 'outgoing' : 'incoming');
-
     const senderName = (message.profile_from?.username || 'Unknown User');
     const isSenderNameHidden = (message_type == 'direct') ? 'style="display: none;"' : '';
 
@@ -776,6 +772,4 @@ async function loadMessage(message, message_type = 'direct') {
 
     messageArea.appendChild(messageElement);
 }
-
-
 ////////////////////////////////////////////////////////////////////

@@ -752,13 +752,25 @@ async function loadMessage(message, message_type = 'direct') {
     // The indent is also always present initially.
 
     const msgDate = new Date(message.created_at);
+    const now = new Date();
+    // Check if it's the same day
+    const isToday = msgDate.toDateString() === now.toDateString();
+    const date = isToday
+        ? msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : msgDate.toLocaleString([], { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric',
+            hour: '2-digit', 
+            minute: '2-digit' 
+            });
 
     messageElement.innerHTML = `
         <div class="message-bubble">
             <div class="message-sender" ${isSenderNameHidden}>${senderName}</div>
-            <div class="message-content" title="${msgDate.toLocaleDateString()}">${message.contents}</div>
+            <div class="message-content">${message.contents}</div>
             <div class="message-timestamp">
-                ${msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                ${date}
                 <pre><br></pre>
             </div>
         </div>

@@ -784,8 +784,37 @@ async function loadMessage(message, message_type = 'direct') {
                 <pre><br></pre>
             </div>
         </div>
+        ${isSentByCurrentUser ? // just so I can swap the reply and delete button TTwTT 
+            `
+            <div class="message-menu">
+                <button id="message-reply-btn" data-msg-id="${message.id}">
+                    <i class="fi fi-br-paper-plane-launch"></i>
+                </button>
+                <button id="message-like-btn" data-msg-id="${message.id}">
+                    <i class="fi fi-br-social-network"></i>
+                </button>
+                <button id="message-delete-btn" data-msg-id="${message.id}">
+                    <i class="fi fi-br-cross-circle"></i>
+                </button>
+            </div>
+            `
+        : 
+            `
+            <div class="message-menu">
+                <button id="message-delete-btn" data-msg-id="${message.id}">
+                    <i class="fi fi-br-cross-circle"></i>
+                </button>
+                <button id="message-like-btn" data-msg-id="${message.id}">
+                    <i class="fi fi-br-social-network"></i>
+                </button>
+                <button id="message-reply-btn" data-msg-id="${message.id}">
+                    <i class="fi fi-br-paper-plane-launch"></i>
+                </button>
+            </div>
+            `
+        }
     `;
-
+    
     messageArea.appendChild(messageElement);
 }
 ////////////////////////////////////////////////////////////////////

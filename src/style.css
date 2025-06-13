@@ -28,17 +28,29 @@
     --scrollbar-track: var(--bg-secondary);
 
     /* Font & Spacing (Unchanged) */
-    --font-family-base: 'Inter', Arial, sans-serif;
+    --font-family-base: "Comic Neue", cursive;
     --border-radius-sm: 6px;
     --border-radius-md: 12px;
     --border-radius-lg: 20px;
 }
+
+
+textarea::placeholder, 
+textarea::-webkit-input-placeholder, 
+textarea::-moz-placeholder,
+textarea:-ms-input-placeholder {
+    font-family: var(--font-family-base);
+}
+
 
 /* Base styles */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+
+    font-weight: 600;
+    font-style: normal;
 }
 
 body {
@@ -376,15 +388,69 @@ body {
 .message {
     display: flex;
     flex-direction: column;
-    max-width: 75%;
+    width: 100%;
+    max-width: 100%;
     position: relative;
     min-width: 0;              /* allow this flex child to shrink */
     overflow-wrap: break-word; /* force long words to wrap */
 }
 
+.message:hover {
+    .message-menu {
+        opacity: 1;          /* Fade in */
+        visibility: visible; /* Make visible */
+        pointer-events: auto; /* Make it clickable */
+        transition-delay: 0s; /* Reset any delay on hover out if needed */
+    }
+}
+
+/* Styles for the message-menu when it's hidden (default state) */
+.message-menu {
+    display: flex; /* Keep display: flex so its children maintain their layout even when invisible */
+
+    width: 25%;
+    height: 100%;
+
+    column-gap: 20%;
+
+    justify-content: center;
+    align-items: center;
+
+    opacity: 0; 
+    visibility: hidden;
+
+    /* for TESTING */
+    /* opacity: 1;
+    visibility: visible; */
+
+    pointer-events: none;
+    transition: opacity 0.15s ease-in, visibility 0s linear 0s;
+}
+
+/* Your other styles for buttons and icons remain unchanged */
+.message-menu button {
+    height: auto;
+    width: auto;
+
+    opacity: 0.3;
+    color: white;
+}
+.message-menu button:hover {
+    opacity: 1;
+}
+.message-menu i {
+    font-size: 1.5em;
+}
+
+.message-menu, #message-delete-btn, #message-reply-btn, #message-like-btn {
+    border: none;
+    background-color: var(--bg-primary);
+}
+
 /* Styles for messages received from others */
 .message.incoming {
     align-self: flex-start;
+    flex-direction: row;
 }
 
 /* Styles for messages sent by the current user */
@@ -394,13 +460,13 @@ body {
 }
 
 .message.outgoing .message-timestamp {
-    margin-right: 1.5vw;
+    margin-right: 0.5vw;
     align-self: flex-end; /* Aligns the entire message bubble to the right side of the message-area */
     flex-direction: row-reverse; /* Reverses the order of items within the flex container: content then avatar */
 }
 
 .message.incoming .message-timestamp {
-    margin-left: 1.5vw;
+    margin-left: 1vw;
 }
 
 /* Avatar styling (if you decide to show avatars next to messages) */
@@ -460,7 +526,7 @@ body {
 }
 
 /* Align sender name to the right for sent messages */
-.message.outgoing .message-sender {
+.message.outgoing .message-sender, .message.outgoing .message-timestamp {
     text-align: right;
 }
 
@@ -471,12 +537,6 @@ body {
     margin-top: 2px; /* Small space above the timestamp */
     display: block; /* Ensures the timestamp takes its own line */
 }
-
-/* Align timestamp to the right for sent messages */
-.message.outgoing .message-timestamp {
-    text-align: right;
-}
-/* Message Input Area */
 .message-input-area {
     display: flex;
     align-items: center;
@@ -491,15 +551,12 @@ body {
     margin: 0 5px; /* Spacing around buttons */
     padding: 8px; /* Consistent padding for touch */
 }
-
 .message-input-area .icon-button:first-child {
     margin-left: 0;
 }
-
 .message-input-area .icon-button:last-child {
     margin-right: 0;
 }
-
 .message-input-area textarea {
     flex-grow: 1;
     padding: 10px 18px;
@@ -512,18 +569,15 @@ body {
     margin: 0 10px;
     outline: none;
 }
-
 .message-input-area textarea::placeholder {
     color: var(--text-dark);
 }
-
 #message-typed {
     overflow-y: auto;
     resize: none;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none;  /* IE and Edge */
 }
-
 #message-typed::-webkit-scrollbar {
     display: none; /* Chrome, Safari */
 }
@@ -613,7 +667,12 @@ body {
     }
 
     .message {
-        max-width: 90%; /* Allow messages to be wider */
+        max-width: 100%; /* Allow messages to be wider */
+    }
+
+    .message-menu {
+        margin-left: 2%;
+        margin-right: 2%;
     }
 
     .message-input-area {
@@ -650,5 +709,9 @@ body {
     .message-input-area .icon-button {
         font-size: 1.2em;
         padding: 4px;
+    }
+    .message-menu {
+        margin-left: 5%;
+        margin-right: 5%;
     }
 }

@@ -2,7 +2,7 @@ import { supabase } from './supabase/supabaseClient.js';
 
 
 
-export async function changeUsername(newUsername, userAuthId) {
+export async function changeUsername(newUsername) {
     const { data, error } = await supabase
         .from('profile')
         .update({ username: newUsername })

@@ -258,7 +258,11 @@ body {
     padding: 12px 15px; /* More padding */
     cursor: pointer;
     transition: background-color 0.2s ease;
+
+    border-bottom: 2px outset rgb(69, 69, 69);
+    /* border-style: outset; */
     border-radius: var(--border-radius-sm);
+    
     margin: 0 8px 5px 8px; /* Margin bottom for separation */
 }
 
@@ -401,7 +405,11 @@ body {
         visibility: visible; /* Make visible */
         pointer-events: auto; /* Make it clickable */
         transition-delay: 0s; /* Reset any delay on hover out if needed */
+
+        background-color: transparent;
     }
+    background-color: #212223;
+    border-radius: 1vw;
 }
 
 /* Styles for the message-menu when it's hidden (default state) */
@@ -499,7 +507,7 @@ body {
     overflow-wrap: break-word;
     max-width: 40vw;
     white-space: pre-wrap;
-    padding: 10px 15px; /* Padding inside the message bubble */
+    padding: 10px 15px;
     border-radius: var(--border-radius-md); /* Apply the medium border-radius defined in :root */
     line-height: 1.4; /* Improve readability of text */
     word-wrap: break-word; /* Ensures long words break and wrap to the next line */

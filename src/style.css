@@ -654,6 +654,7 @@ body {
     .right-panel {
         flex-grow: 1; /* Takes remaining height */
         min-height: 0; /* Allows shrinking */
+        max-height: 70vh;
     }
 
     .conversation-header {

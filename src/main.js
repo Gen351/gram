@@ -2,6 +2,7 @@
 
 import { supabase } from './supabase/supabaseClient.js';
 import { setConversationContext } from './send.js';
+import { toggleLikeMessage } from './updateMessage.js';
 
 // Global variables for DOM elements and session data
 const profilePicContainer = document.getElementById('profilePicContainer');
@@ -103,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
     // --- Dashboard loading functions ---
-
     async function fetchUserProfile(userId, userEmail) {
         if (!profilePicContainer || !profileInitialSpan) return null;
 
@@ -416,6 +416,27 @@ document.addEventListener('DOMContentLoaded', () => {
 ///////////////////////////////////////////////////////////////////////////////
 
 
+
+/////////////////////////////////////////////////////////////////////////////////
+// Fetching a message ///////////////////////////////////////////////////////////
+async function getMessage(msgId) {
+    try {
+        const { data:message, error } = await supabase
+            .from('message')
+            .select('*')
+            .eq('id', msgId)
+            .single();
+
+        return message;
+    } catch (error) {
+        console.error('Error fetching message: ', error);
+        return null;
+    }
+}
+// Fetching a message ///////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+
 /////////////////////////////////////////////////////////////////////////////
 // Choosing a conversation functions /////////////////////////////////////////
 
@@ -429,15 +450,7 @@ async function loadConversationMessages(conversationId) {
         // Fetch messages for the given conversation ID, ordered by creation time
         const { data: messages, error } = await supabase
                 .from('message')
-                .select(`
-                    id,
-                    created_at,
-                    contents,
-                    from,
-                    to,
-                    from,
-                    to
-                    `)
+                .select('*')
                 .eq('conversation_id', conversationId) // Updated field name
                 .order('created_at', { ascending: true });
             
@@ -774,47 +787,51 @@ async function loadMessage(message, message_type = 'direct') {
             hour: '2-digit', 
             minute: '2-digit' 
             });
+    
+    let replyHTML = '';
 
-    messageElement.innerHTML = `
+    // 2. If a reply exists, fetch it and build the reply HTML.
+    if (message.reply_to != null) {
+        const replied_message = await getMessage(message.reply_to);
+        if (replied_message) {
+            const repliedPreview = replied_message.contents.slice(0, 100); // trim preview
+
+            // Populate the variable instead of adding directly to the element
+            replyHTML = `
+                <div class="message-reply-preview">
+                    <div class="reply-bar"></div>
+                    <div class="reply-content">
+                        <div class="reply-text">${repliedPreview}</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    const highlightIfLiked = message.liked == 'liked' ? "style='border: 2px dashed red;'" : '';
+
+    messageElement.innerHTML += `
         <div class="message-bubble">
+            ${replyHTML}
             <div class="message-sender" ${isSenderNameHidden}>${senderName}</div>
-            <div class="message-content">${message.contents}</div>
+            <div class="message-content" ${highlightIfLiked}>${message.contents}</div>
             <div class="message-timestamp">
                 ${date}
                 <pre><br></pre>
             </div>
         </div>
-        ${isSentByCurrentUser ? // just so I can swap the reply and delete button TTwTT 
-            `
-            <div class="message-menu">
-                <button id="message-reply-btn" data-msg-id="${message.id}">
-                    <i class="fi fi-br-paper-plane-launch"></i>
-                </button>
-                <button id="message-like-btn" data-msg-id="${message.id}">
-                    <i class="fi fi-br-social-network"></i>
-                </button>
-                <button id="message-delete-btn" data-msg-id="${message.id}">
-                    <i class="fi fi-br-cross-circle"></i>
-                </button>
-            </div>
-            `
-        : 
-            `
-            <div class="message-menu">
-                <button id="message-delete-btn" data-msg-id="${message.id}">
-                    <i class="fi fi-br-cross-circle"></i>
-                </button>
-                <button id="message-like-btn" data-msg-id="${message.id}">
-                    <i class="fi fi-br-social-network"></i>
-                </button>
-                <button id="message-reply-btn" data-msg-id="${message.id}">
-                    <i class="fi fi-br-paper-plane-launch"></i>
-                </button>
-            </div>
-            `
-        }
+
+        <div class="message-menu">
+            <button id="message-like-btn" data-msg-id="${message.id}" style="${message.liked == 'liked' ? 'color: red;' : ''}"><i class="fi fi-br-heart"></i></button>
+            <button id="message-reply-btn" data-msg-id="${message.id}"><i class="fi fi-br-paper-plane-launch"></i></button>
+            ${isSentByCurrentUser ? `<button id="message-delete-btn" data-msg-id="${message.id}"><i class="fi fi-br-cross-circle"></i></button>` 
+            : ``}
+        </div>
     `;
     
     messageArea.appendChild(messageElement);
+    
+    const likeBtn = messageElement.querySelector('#message-like-btn');
+    if (likeBtn) { likeBtn.addEventListener('click', () => toggleLikeMessage(message.id)); }
 }
 ////////////////////////////////////////////////////////////////////

@@ -73,7 +73,7 @@ body {
 .left-panel {
     flex: 0 0 350px;
     min-width: 280px;
-    max-width: 320px;
+    max-width: 300px;
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
@@ -373,7 +373,32 @@ body {
     border-radius: 10px;
     border: 2px solid var(--scrollbar-track);
 }
+#scroll-to-bottom-btn {
+    position: sticky;
+    display: block;
 
+    height: 0px;
+
+    background-color: transparent;
+    color:#E4E6EB;
+
+    left: 100%;
+    bottom: 12vh;
+
+    font-size: xx-large;
+
+    border: none;
+
+    cursor: pointer;
+
+    z-index: 5;
+
+    transition: 0.3s;
+}
+#scroll-to-bottom-btn:hover {
+    transform: scale(1.2);
+    transform: translateY(-5px);
+}
 
 /* --- MODIFIED & CLEANED MESSAGE STYLES --- */
 

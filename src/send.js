@@ -1,6 +1,7 @@
 // src/send.js
 import { supabase } from './supabase/supabaseClient.js';
 
+
 // These will be set by main.js whenever a conversation is opened:
 let currentConversationId = null;
 let currentSessionUserId = null;
@@ -17,6 +18,9 @@ export function setConversationContext(convoId, myUserId, otherUserId) {
     currentConversationId = convoId;
     currentSessionUserId = myUserId;
     currentOtherUserId = otherUserId;
+    console.log(currentConversationId);
+    console.log(currentSessionUserId);
+    console.log(currentOtherUserId);
 }
 
 // Grab DOM elements once:
@@ -26,12 +30,12 @@ const sendButton   = document.querySelector('#send-icon'); // supposedly a butto
 
 if (sendButton && messageInput) {
     sendButton.addEventListener('click',() => {
-        send();
+        send(currentSessionUserId, currentOtherUserId, currentConversationId, messageInput);
     });
     messageInput.addEventListener('keypress', (e) => {
         if(e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            send();
+            send(currentSessionUserId, currentOtherUserId, currentConversationId, messageInput);
             messageInput.style.height = '40px';
         }
     });
@@ -39,37 +43,35 @@ if (sendButton && messageInput) {
     console.warn('send.js: .send-icon or #message-typed not found in DOM.');
 }
 
-async function send() {
+export async function send(currentSessionUserId, currentOtherUserId, currentConversationId, messageInput) {
     // 1) Ensure we have a valid conversation ID
     if (!currentConversationId) {
         alert('No conversation selected.');
         return;
     }
+
     // 2) Read and trim the input
     const text = messageInput.value.trim();
-    if (!text) { // nothing to send
-        return;
-    }
+    if (!text) return;
+
     // 3) Insert a new row into the "message" table
     try {
-        await supabase
+        const { data, error } = await supabase
             .from('message')
             .insert({
-            conversation_id: currentConversationId,
-            from: currentSessionUserId,
-            to:   currentOtherUserId,
-            contents: text
-            });
+                conversation_id: currentConversationId,
+                from: currentSessionUserId,
+                to: currentOtherUserId,
+                contents: text
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
 
         // 4) Clear the input field
         messageInput.value = '';
 
-        // 5) Optionally, you can reload the messages for this conversation.
-        //    We assume main.js exposes a global function loadConversationMessages()
-        //    – if it's declared in main.js at top‐level (window scope), you can call it here:
-        if (typeof window.loadConversationMessages === 'function') {
-            window.loadConversationMessages(currentConversationId);
-        }
     } catch (sendError) {
         console.error('Error sending message:', sendError.message);
         alert('Failed to send message. Please try again.');

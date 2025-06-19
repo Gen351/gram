@@ -11,6 +11,7 @@
         /* like icon */
         /* send icon */
         /* search icon */
+        /* scroll down button */
         @import url('https://cdn-uicons.flaticon.com/3.0.0/uicons-bold-rounded/css/uicons-bold-rounded.css');
         /* heart icon */
         @import url('https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-rounded/css/uicons-solid-rounded.css');
@@ -35,7 +36,7 @@
                 </div>
                 <div class="search-things">
                     <div class="search-bar">
-                        <input type="text" placeholder="Search Messenger" id="search">
+                        <input type="text" placeholder="Search" id="search">
                     </div>
                     <div class="search-results">
                         
@@ -71,7 +72,9 @@
             
             <div class="message-area">
                 <!-- the messages here -->
+
             </div>
+            <button id="scroll-to-bottom-btn"><i class="fi fi-br-caret-down"></i></button>
             
             <div class="message-input-area">
                 <button class="icon-button" id="attch-icon">
@@ -87,7 +90,7 @@
                     <i class="fi fi-br-paper-plane"></i>
                 </button>
 
-                <button class="icon-button" id="like-icon">
+                <button class="icon-button" id="like-icon" data-is-replying="false">
                     <i class="fi fi-br-heart"></i>
                 </button>
             </div>

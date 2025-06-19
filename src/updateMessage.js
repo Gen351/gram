@@ -50,6 +50,9 @@ export async function updateMessage(message) {
 
 export async function appendLatestMessage(message, currentSessionUserId, currentConvoId) {
     if(!messageArea) { return; }
+    // check if the message exists already.
+    // if(document.querySelector(`[data-msg-id="${message.id}"]`) !== null) { return; }
+
     if(message.conversation_id != currentConvoId) {
         return;
     }
@@ -160,16 +163,42 @@ export async function loadMessage(message, currentSessionUserId, message_type = 
     const replyBtn = messageElement.querySelector('#message-reply-btn');
     if(replyBtn) {
         replyBtn.addEventListener('click', () => {
-
+            toggleLikeButtonFunction();
         });
     }
 }
 
 async function toggleLikeButtonFunction() {
     const likeBtnIcon = document.querySelector('#like-icon');
-    if(!likeBtnIcon) { return; }
+    const replyBtnIcons = document.querySelectorAll('#message-reply-btn');
 
+    if (!likeBtnIcon || !replyBtnIcons) return;
 
+    const isReplying = likeBtnIcon.dataset.isReplying === 'true';
+
+    if (!isReplying) {
+        likeBtnIcon.style.color = "red";
+        likeBtnIcon.style.opacity = 1;
+        likeBtnIcon.innerHTML = `<i class="fi fi-br-comment-xmark"></i>`;
+        likeBtnIcon.dataset.isReplying = 'true';
+
+        likeBtnIcon.addEventListener('click', toggleLikeButtonFunction);
+
+        replyBtnIcons.forEach(rplyBtn => {
+            rplyBtn.style.display = 'none';
+        });
+    } else {
+        likeBtnIcon.style.color = "white";
+        likeBtnIcon.style.opacity = 0.6;
+        likeBtnIcon.innerHTML = `<i class="fi fi-br-heart"></i>`;
+        likeBtnIcon.dataset.isReplying = 'false';
+
+        likeBtnIcon.removeEventListener('click', toggleLikeButtonFunction);
+
+        replyBtnIcons.forEach(rplyBtn => {
+            rplyBtn.style.display = 'flex';
+        });
+    }
 }
 
 

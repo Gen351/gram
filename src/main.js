@@ -403,6 +403,31 @@ document.addEventListener('DOMContentLoaded', () => {
             // Implement new chat UI/logic here, perhaps showing a modal to select users
         });
     }
+
+
+    // Show the SCROLL TO BELLOW button
+    const messageArea = document.querySelector(".message-area");
+    const scrollToBottomBtn = document.getElementById("scroll-to-bottom-btn");
+
+    function scrollAtBottom() {
+        const atBottom = messageArea.scrollTop + messageArea.clientHeight >= messageArea.scrollHeight - 10;
+        if (!atBottom) { scrollToBottomBtn.style.display = "block"; }
+        else { scrollToBottomBtn.style.display = "none"; }
+    }
+    // Listen for scroll events
+    messageArea.addEventListener("scroll", () => {
+        scrollAtBottom();
+    });
+    // Also observe resize changes in messageArea
+    const resizeObserver = new ResizeObserver(() => {
+        scrollAtBottom();
+    });
+    resizeObserver.observe(messageArea);
+
+    // Button click scrolls to bottom
+    scrollToBottomBtn.addEventListener("click", () => {
+        messageArea.scrollTop = messageArea.scrollHeight;
+    });
  
     console.log('Dashboard main.js loaded.');
 }); 

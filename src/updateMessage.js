@@ -48,13 +48,13 @@ export async function updateMessage(message) {
 }
 
 
-export async function appendLatestMessage(message, currentSessionUserId) {
+export async function appendLatestMessage(message, currentSessionUserId, currentConvoId) {
     if(!messageArea) { return; }
     if(message.conversation_id != currentConvoId) {
         return;
     }
     if(message.from == currentSessionUserId || message.to == currentSessionUserId) {
-        loadMessage(messagePayload, currentSessionUserId);
+        loadMessage(message, currentSessionUserId);
         messageArea.scrollTop = messageArea.scrollHeight;
     }
 }

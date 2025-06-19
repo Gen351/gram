@@ -30,7 +30,7 @@ supaChannel
         table: 'message',
     }, (payload) => {
         if(payload.eventType === 'INSERT') {
-            appendLatestMessage(payload.new);
+            appendLatestMessage(payload.new, currentSessionUserId, currentConvoId);
         } else if (payload.eventType === 'UPDATE') {
             updateMessage(payload.new);
         } else if (payload.eventType === 'DELETE') {
@@ -413,20 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /////////////////////////////////////////////////////////////////////////////////
 // Fetching a message ///////////////////////////////////////////////////////////
-async function getMessage(msgId) {
-    try {
-        const { data:message, error } = await supabase
-            .from('message')
-            .select('*')
-            .eq('id', msgId)
-            .single();
 
-        return message;
-    } catch (error) {
-        console.error('Error fetching message: ', error);
-        return null;
-    }
-}
 // Fetching a message ///////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 

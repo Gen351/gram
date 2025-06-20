@@ -458,7 +458,7 @@ async function loadConversationMessages(conversationId) {
                 .from('message')
                 .select('*')
                 .eq('conversation_id', conversationId) // Updated field name
-                .order('created_at', { ascending: true });
+                .order('id', { ascending: true });
             
             if (error) {
                 console.error("Error fetching messages:", error.message);
@@ -486,7 +486,8 @@ async function loadConversationMessages(conversationId) {
                 const { data: type, error } = await supabase
                         .from('conversation')
                         .select('type')
-                        .eq('id', coversationId);
+                        .eq('id', conversationId)
+                        .single();
                 message_type = type;
 
                 if(error) {
@@ -506,9 +507,9 @@ async function loadConversationMessages(conversationId) {
             }
             
             // Loading the message
-            messages.forEach(message => {
-                loadMessage(message, currentSessionUserId, message_type);
-            });
+            for (const message of messages) {
+                await loadMessage(message, currentSessionUserId, message_type);
+            }
             
             // Scroll to the bottom of the message area
             messageArea.scrollTop = messageArea.scrollHeight;

@@ -1,6 +1,6 @@
 // src/send.js
 import { supabase } from './supabase/supabaseClient.js';
-
+import { toggleLikeButtonFunction } from './updateMessage.js';
 
 // These will be set by main.js whenever a conversation is opened:
 let currentConversationId = null;
@@ -30,12 +30,12 @@ const sendButton   = document.querySelector('#send-icon'); // supposedly a butto
 
 if (sendButton && messageInput) {
     sendButton.addEventListener('click',() => {
-        send(currentSessionUserId, currentOtherUserId, currentConversationId, messageInput);
+        send(currentSessionUserId, currentOtherUserId, currentConversationId);
     });
     messageInput.addEventListener('keypress', (e) => {
         if(e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            send(currentSessionUserId, currentOtherUserId, currentConversationId, messageInput);
+            send(currentSessionUserId, currentOtherUserId, currentConversationId);
             messageInput.style.height = '40px';
         }
     });
@@ -43,7 +43,7 @@ if (sendButton && messageInput) {
     console.warn('send.js: .send-icon or #message-typed not found in DOM.');
 }
 
-export async function send(currentSessionUserId, currentOtherUserId, currentConversationId, messageInput) {
+export async function send(currentSessionUserId, currentOtherUserId, currentConversationId) {
     // 1) Ensure we have a valid conversation ID
     if (!currentConversationId) {
         alert('No conversation selected.');
@@ -52,24 +52,31 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
 
     // 2) Read and trim the input
     const text = messageInput.value.trim();
+    const replyTo = messageInput.dataset.replyTo; // use `dataset`, not `.data`
     if (!text) return;
 
-    // 3) Insert a new row into the "message" table
     try {
-        const { data, error } = await supabase
+        // Build the message object conditionally
+        const newMessage = {
+            conversation_id: currentConversationId,
+            from: currentSessionUserId,
+            to: currentOtherUserId,
+            contents: text
+        };
+
+        if (replyTo !== '') {
+            newMessage.reply_to = replyTo;
+            toggleLikeButtonFunction(); // change the messaging back to not replying...
+        }
+
+        const { error } = await supabase
             .from('message')
-            .insert({
-                conversation_id: currentConversationId,
-                from: currentSessionUserId,
-                to: currentOtherUserId,
-                contents: text
-            })
+            .insert(newMessage)
             .select()
             .single();
 
         if (error) throw error;
 
-        // 4) Clear the input field
         messageInput.value = '';
 
     } catch (sendError) {

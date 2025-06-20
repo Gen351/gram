@@ -97,7 +97,7 @@ export async function loadMessage(message, currentSessionUserId, message_type = 
     messageElement.dataset.msgId = message.id; // for querying the message
     const isSentByCurrentUser = message.from === currentSessionUserId;
     messageElement.classList.add('message', isSentByCurrentUser ? 'outgoing' : 'incoming');
-    const senderName = (message.profile_from?.username || 'Unknown User');
+    const senderName = (message.profile_from?.username || '');
     const isSenderNameHidden = (message_type == 'direct') ? 'style="display: none;"' : '';
 
     // The new message's timestamp is ALWAYS visible initially.
@@ -164,11 +164,12 @@ export async function loadMessage(message, currentSessionUserId, message_type = 
     if(replyBtn) {
         replyBtn.addEventListener('click', () => {
             toggleLikeButtonFunction();
+            setReplyToId(message.id);
         });
     }
 }
 
-async function toggleLikeButtonFunction() {
+export async function toggleLikeButtonFunction() {
     const likeBtnIcon = document.querySelector('#like-icon');
     const replyBtnIcons = document.querySelectorAll('#message-reply-btn');
 
@@ -181,6 +182,7 @@ async function toggleLikeButtonFunction() {
         likeBtnIcon.style.opacity = 1;
         likeBtnIcon.innerHTML = `<i class="fi fi-br-comment-xmark"></i>`;
         likeBtnIcon.dataset.isReplying = 'true';
+        document.getElementById('message-typed').dataset.replyTo = '';
 
         likeBtnIcon.addEventListener('click', toggleLikeButtonFunction);
 
@@ -194,6 +196,7 @@ async function toggleLikeButtonFunction() {
         likeBtnIcon.dataset.isReplying = 'false';
 
         likeBtnIcon.removeEventListener('click', toggleLikeButtonFunction);
+        document.getElementById('message-typed').dataset.replyTo = '';
 
         replyBtnIcons.forEach(rplyBtn => {
             rplyBtn.style.display = 'flex';
@@ -201,6 +204,10 @@ async function toggleLikeButtonFunction() {
     }
 }
 
+// when clicking the reply button, set the reply to according to the data in that reply button
+async function setReplyToId(msgId) { 
+    document.getElementById('message-typed').dataset.replyTo = msgId;
+}
 
 async function getMessage(msgId) {
     try {

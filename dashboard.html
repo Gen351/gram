@@ -42,12 +42,6 @@
                         
                     </div>
                 </div>
-
-                <div class="actions">
-                    <button class="icon-button" id="new-chat-button">
-                        <i class="fi fi-br-plus"></i>
-                    </button>
-                </div>
             </div>
             <div class="chats-list">
                 <!-- Insert conversations here -->
@@ -56,9 +50,14 @@
 
         <div class="right-panel">
             <div class="conversation-header">
-                <div class="recipient-info">
-                    <div class="recipient-avatar"></div>
-                    <div class="recipient-name">Conversation</div>
+                <div class="chat-actions">
+                    <div class="btn-return-to-conversations-container">
+                        <button><i class="fi fi-br-angle-left"></i></button>
+                    </div>
+                    <div class="recipient-info">
+                        <div class="recipient-avatar"></div>
+                        <div class="recipient-name">Conversation</div>
+                    </div>
                 </div>
                 <div class="header-actions">
                     <button class="icon-button" id="search-icon">
@@ -74,6 +73,11 @@
                 <!-- the messages here -->
 
             </div>
+
+            <div class="reply-preview-area">
+                <!-- the replye preview here -->
+            </div>
+
             <button id="scroll-to-bottom-btn"><i class="fi fi-br-caret-down"></i></button>
             
             <div class="message-input-area">

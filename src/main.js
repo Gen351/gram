@@ -2,9 +2,20 @@
 
 import { supabase } from './supabase/supabaseClient.js';
 import { setConversationContext } from './send.js';
-import { updateMessage } from './updateMessage.js';
-import { appendLatestMessage } from './updateMessage.js';
-import { loadMessage } from './updateMessage.js';
+import { loadMessage, 
+        appendLatestMessage,
+        updateMessage,
+        scrollAtBottom
+        } from './updateMessage.js';
+
+import { fetchProfile, 
+        createProfile, 
+        fetchConversationIds, 
+        fetchConversationData,
+        fetchRecentMessages,
+        fetchConversationParticipantUsername
+        } from './supabase/queryFunctions.js';
+
 
 // Global variables for DOM elements and session data
 const profilePicContainer = document.getElementById('profilePicContainer');
@@ -79,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentSessionUserId = session.user.id; // Store the auth.users.id
 
                 // Fetch user profile to display the initial and get profile_id
-                const profileData = await fetchUserProfile(currentSessionUserId, session.user.email);
+                const profileData = await loadUserProfile(currentSessionUserId, session.user.email);
 
                 if (profileData && profileData.id) {
                     currentSessionProfileId = profileData.id; // Assign the profile ID correctly
@@ -98,192 +109,92 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
     // --- Dashboard loading functions ---
-    async function fetchUserProfile(userId, userEmail) {
+    async function loadUserProfile(userId, userEmail) {
         if (!profilePicContainer || !profileInitialSpan) return null;
 
         try {
-            let { data, error } = await supabase
-                .from('profile')
-                .select('id, username, bio') // Select 'id' as well!
-                .eq('auth_id', userId)
-                .single();
+            // Try to fetch existing profile
+            const profileData = await fetchProfile(userId);
 
-            if (error && error.code !== 'PGRST116') { // PGRST116: "No rows found"
-                throw error;
-            }
-
-            if (error && error.code === 'PGRST116') {
+            let data;
+            if (profileData.id) { // Found
+                data = profileData;
+            } else if (profileData.code === 'PGRST116') {
+                // Not found, so create
                 console.log("Profile not found for user, creating a new one.");
-                const { data: newProfile, error: insertError } = await supabase
-                    .from('profile')
-                    .insert([
-                        {
-                            auth_id: userId,
-                            username: userEmail.split('@')[0] || 'New User'
-                        }
-                    ])
-                    .select('id, username, bio') // Select 'id' from the newly inserted profile too
-                    .single();
-
-                if (insertError) {
-                    console.error("Error creating new profile:", insertError.message);
-                    throw insertError;
-                }
-                data = newProfile;
+                data = await createProfile(userId, userEmail);
                 console.log("New profile created:", data);
+            } else { // Some other error
+                throw profileData;
             }
 
             // Display the initial (first letter of username or email)
-            let initial = '?';
-            if (data && data.username) {
-                initial = data.username.charAt(0).toUpperCase();
-            } else if (userEmail) {
-                initial = userEmail.charAt(0).toUpperCase();
-            }
+            const initial = data.username
+                ? data.username.charAt(0).toUpperCase()
+                : (userEmail.charAt(0).toUpperCase() || '?');
+
             profileInitialSpan.textContent = initial;
             profilePicContainer.innerHTML = `
-                        <img src="https://ui-avatars.com/api/?name=${data.username}
-                            &size=45
-                            &background=${data.username.charCodeAt(0) * 6500}
-                            &color=${data.username.charCodeAt(data.username.length - 1) * 900}
-                            &length=3
-                            &rounded=true
-                            &bold=true
-                        ">    
-                    `;
+                <img src="https://ui-avatars.com/api/?name=${data.username}
+                    &size=45
+                    &background=${data.username.charCodeAt(0) * 6500}
+                    &color=${data.username.charCodeAt(data.username.length - 1) * 900}
+                    &length=3
+                    &rounded=true
+                    &bold=true
+                ">
+            `;
 
-            return data; // Return the profile data including the ID
-        } catch (fetchError) {
-            console.error('Error fetching or creating user profile:', fetchError.message);
-            const fallbackInitial = userEmail ? userEmail.charAt(0).toUpperCase() : '?';
-            profileInitialSpan.textContent = fallbackInitial;
+            return data;
+        } catch (err) {
+            console.error('Error fetching or creating user profile:', err.message || err);
+            // Fallback initial
+            const fallback = userEmail ? userEmail.charAt(0).toUpperCase() : '?';
+            profileInitialSpan.textContent = fallback;
             profilePicContainer.style.backgroundImage = '';
             return null;
         }
     }
 
     // New function to fetch conversations based on the new schema
-    async function fetchConversationsForUser(userId) {
+    async function loadConversationsForUser(userId) {
         try {
-            // 1) Get all conversation IDs where the user is a participant
-            const { data: participations, error: partError } = await supabase
-                .from('conversation_participant')
-                .select('conversation_id')
-                .eq('participant', userId);
+            // Step 1: fetch all conversation IDs
+            const conversationIds = await fetchConversationIds(userId);
+            if (conversationIds.length === 0) return [];
 
-            if (partError) throw partError;
+            // Step 2: fetch the conversation rows
+            const conversations = await fetchConversationData(conversationIds);
 
-            const conversationIds = participations.map(p => p.conversation_id);
-
-            if (conversationIds.length === 0) {
-                return []; // User is not part of any conversations
-            }
-
-            // 2) Fetch the details of these conversations,
-            //    and include participants + group name (if group chat)
-            const { data: conversations, error: convoError } = await supabase
-                .from('conversation')
-                .select(`
-                    id,
-                    created_at,
-                    conversation_name,
-                    type,
-                    FK_group,
-                    group ( group_name ),
-                    conversation_participant ( participant )
-                `)
-                .in('id', conversationIds) // Only conversations the user is part of
-                .order('created_at', { ascending: false });
-
-            if (convoError) throw convoError;
-
-            console.log("Fetched conversations:", conversations);
-
-            // 3) Determine a display name for each conversation
+            // Step 3: map over them to compute displayName
             return conversations.map(convo => {
-                let displayName = convo.conversation_name;
+            let displayName = convo.conversation_name;
 
-                if (convo.type === 'group') {
-                    // Use group name if available
-                    displayName = convo.group?.group_name || `Group Chat ${convo.id}`;
-                } else { // type === 'direct'
-                    // Find the other participant's username
-                    const other = convo.conversation_participant.find(
-                        p => p.participant !== userId
-                    );
-                    displayName = other?.profile?.username || `Chat ${convo.id}`;
-                }
-                return { ...convo, displayName };
+            if (convo.type === 'group') {
+                displayName = convo.group?.group_name || `Group Chat ${convo.id}`;
+            } else {
+                // guard: ensure participants array exists
+                const participants = Array.isArray(convo.conversation_participant)
+                ? convo.conversation_participant
+                : [];
+
+                // find the other user
+                const other = participants.find(p => p.participant !== userId);
+                displayName = other?.profile?.username || `Chat ${convo.id}`;
+            }
+
+            return { ...convo, displayName };
             });
-        } catch (fetchError) {
-            console.error('Error fetching conversations:', fetchError.message);
-            return []; // Return an empty array on error
-        }
-    }
-    
-    async function fetchRecentMessages(conversationID, count = 1) {
-        try {
-            const { data, error } = await supabase
-                .from('message')
-                .select('*')
-                .eq('conversation_id', conversationID)
-                .order('created_at', { ascending: false })
-                .limit(count);
-
-            if (error || !data) {
-                console.error("Error fetching messages:", error);
-                return [];
-            }
-
-            return data;
-
-        } catch (fetchError) {
-            console.error("Error in fetchRecentMessages:", fetchError.message);
+        } catch (err) {
+            console.error('Error fetching conversations for user:', err.message || err);
             return [];
-        }
-    }
-
-    async function fetchConversationParticipantUsername(conversationID, currentUserId) {
-        try {
-            const { data, error } = await supabase
-                .from('conversation_participant')
-                .select('participant')
-                .eq('conversation_id', conversationID);
-
-            if (error || !data) {
-                console.error("Error fetching participants:", error);
-                return null;
-            }
-
-            // Get the ID of the other participant
-            const other = data.find(p => p.participant !== currentUserId);
-            const otherParticipantId = other?.participant;
-
-            if (!otherParticipantId) return null;
-
-            const { data: profileData, error: err } = await supabase
-                .from('profile')
-                .select('username')
-                .eq('auth_id', otherParticipantId)
-                .single();
-
-            if (err || !profileData) {
-                console.error("Error fetching username:", err);
-                return null;
-            }
-
-            return profileData.username;
-
-        } catch (fetchError) {
-            console.error('Error:', fetchError.message);
-            return null;
         }
     }
 
     async function loadConversations(userId) {
         if (!convoList) return;
 
-        const conversations = await fetchConversationsForUser(userId);
+        const conversations = await loadConversationsForUser(userId);
         convoList.innerHTML = '';
 
         if (conversations.length === 0) {
@@ -404,16 +315,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-    // Show the SCROLL TO BELLOW button
-    const messageArea = document.querySelector(".message-area");
-    const scrollToBottomBtn = document.getElementById("scroll-to-bottom-btn");
-
-    function scrollAtBottom() {
-        const atBottom = messageArea.scrollTop + messageArea.clientHeight >= messageArea.scrollHeight - 10;
-        if (!atBottom) { scrollToBottomBtn.style.display = "block"; }
-        else { scrollToBottomBtn.style.display = "none"; }
-    }
     // Listen for scroll events
     messageArea.addEventListener("scroll", () => {
         scrollAtBottom();
@@ -425,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resizeObserver.observe(messageArea);
 
     // Button click scrolls to bottom
-    scrollToBottomBtn.addEventListener("click", () => {
+    document.getElementById("scroll-to-bottom-btn").addEventListener("click", () => {
         messageArea.scrollTop = messageArea.scrollHeight;
     });
  

@@ -2,6 +2,7 @@ import { supabase } from "./supabase/supabaseClient";
 
 const messageArea = document.querySelector('.message-area');
 
+const likedMessageStyle = '2px dotted red';
 
 
 export async function toggleLikeMessage(msgId) {
@@ -34,7 +35,7 @@ export async function updateMessage(message) {
     const contentDiv = messageElement.querySelector('.message-content');
     if (contentDiv) {
         if (message.liked === 'liked') {
-            contentDiv.style.border = '2px dashed red';
+            contentDiv.style.border = likedMessageStyle;
         } else {
             contentDiv.style.border = 'none';
         }
@@ -43,6 +44,7 @@ export async function updateMessage(message) {
     // Update like button color
     const likeBtn = messageElement.querySelector('#message-like-btn');
     if (likeBtn) {
+        likeBtn.innerHTML = message.liked == 'liked' ? '<i class="fi fi-sr-heart"></i>' : '<i class="fi fi-br-heart"></i>';
         likeBtn.style.color = message.liked === 'liked' ? 'red' : '';
     }
 }
@@ -57,8 +59,8 @@ export async function appendLatestMessage(message, currentSessionUserId, current
         return;
     }
     if(message.from == currentSessionUserId || message.to == currentSessionUserId) {
-        loadMessage(message, currentSessionUserId);
-        messageArea.scrollTop = messageArea.scrollHeight;
+        await loadMessage(message, currentSessionUserId);
+        await scrollAtBottom();
     }
 }
 
@@ -135,7 +137,7 @@ export async function loadMessage(message, currentSessionUserId, message_type = 
         }
     }
 
-    const highlightIfLiked = message.liked == 'liked' ? "style='border: 2px dashed red;'" : '';
+    const highlightIfLiked = message.liked == 'liked' ? "style='border:" + likedMessageStyle + "';" : '';
 
     messageElement.innerHTML += `
         <div class="message-bubble">
@@ -149,7 +151,7 @@ export async function loadMessage(message, currentSessionUserId, message_type = 
         </div>
 
         <div class="message-menu">
-            <button id="message-like-btn" data-msg-id="${message.id}" style="${message.liked == 'liked' ? 'color: red;' : ''}"><i class="fi fi-br-heart"></i></button>
+            <button id="message-like-btn" data-msg-id="${message.id}" style="${message.liked == 'liked' ? 'color: red;' : ''}">${message.liked == 'liked' ? '<i class="fi fi-sr-heart"></i>' : '<i class="fi fi-br-heart"></i>'}</button>
             <button id="message-reply-btn" data-msg-id="${message.id}"><i class="fi fi-br-paper-plane-launch"></i></button>
             ${isSentByCurrentUser ? `<button id="message-delete-btn" data-msg-id="${message.id}"><i class="fi fi-br-cross-circle"></i></button>` 
             : ``}
@@ -159,7 +161,12 @@ export async function loadMessage(message, currentSessionUserId, message_type = 
     messageArea.appendChild(messageElement);
     
     const likeBtn = messageElement.querySelector('#message-like-btn');
-    if (likeBtn) { likeBtn.addEventListener('click', () => toggleLikeMessage(message.id)); }
+    if (likeBtn) { 
+        likeBtn.addEventListener('click', () => {
+            toggleLikeMessage(message.id);
+            scrollAtBottom();
+        });
+    }
     const replyBtn = messageElement.querySelector('#message-reply-btn');
     if(replyBtn) {
         replyBtn.addEventListener('click', () => {
@@ -185,7 +192,7 @@ export async function toggleLikeButtonFunction() {
         document.getElementById('message-typed').dataset.replyTo = '';
 
         likeBtnIcon.addEventListener('click', toggleLikeButtonFunction);
-
+        
         replyBtnIcons.forEach(rplyBtn => {
             rplyBtn.style.display = 'none';
         });
@@ -194,8 +201,13 @@ export async function toggleLikeButtonFunction() {
         likeBtnIcon.style.opacity = 0.6;
         likeBtnIcon.innerHTML = `<i class="fi fi-br-heart"></i>`;
         likeBtnIcon.dataset.isReplying = 'false';
-
+        
         likeBtnIcon.removeEventListener('click', toggleLikeButtonFunction);
+        
+        const preview = document.querySelector('.reply-preview-area');
+        preview.classList.remove('visible');
+        preview.innerHTML = '';
+
         document.getElementById('message-typed').dataset.replyTo = '';
 
         replyBtnIcons.forEach(rplyBtn => {
@@ -207,6 +219,11 @@ export async function toggleLikeButtonFunction() {
 // when clicking the reply button, set the reply to according to the data in that reply button
 async function setReplyToId(msgId) { 
     document.getElementById('message-typed').dataset.replyTo = msgId;
+    
+    const message = await getMessage(msgId);
+    const preview = document.querySelector('.reply-preview-area');
+    preview.classList.add('visible');
+    preview.innerHTML = message.contents;
 }
 
 async function getMessage(msgId) {
@@ -222,4 +239,12 @@ async function getMessage(msgId) {
         console.error('Error fetching message: ', error);
         return null;
     }
+}
+
+export async function scrollAtBottom() {
+    const scrollToBottomBtn = document.getElementById("scroll-to-bottom-btn");
+    const messageArea = document.querySelector(".message-area");
+    const atBottom = messageArea.scrollTop + messageArea.clientHeight >= messageArea.scrollHeight - 10;
+    if (!atBottom) { scrollToBottomBtn.style.display = "block"; }
+    else { scrollToBottomBtn.style.display = "none"; }
 }

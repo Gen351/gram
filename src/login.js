@@ -3,7 +3,7 @@
 import { supabase } from './supabase/supabaseClient.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const authForm = document.getElementById('auth-form');
+    // const authForm = document.getElementById('auth-form');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const authBtn = document.getElementById('authBtn'); // Single auth button

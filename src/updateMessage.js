@@ -61,8 +61,9 @@ export async function appendLatestMessage(message, currentSessionUserId, current
     }
 
     if(message.from == currentSessionUserId || message.to == currentSessionUserId) {
-        fetchConversationType(currentConvoId);
-        await loadMessage(message, currentSessionUserId, currentConvoId);
+        fetchConversationType(message.conversation_id);
+        await loadMessage(message, currentSessionUserId, message.conversation_id);
+        setLatestMessage(message.contents, message.conversation_id);
         scrollDown();
     }
 }
@@ -113,15 +114,14 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
     const date = isToday
         ? msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         : msgDate.toLocaleString([], { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric',
-            hour: '2-digit', 
-            minute: '2-digit' 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit' 
             });
     
     let replyHTML = '';
-
     // 2. If a reply exists, fetch it and build the reply HTML.
     if (message.reply_to != null) {
         const replied_message = await getMessage(message.reply_to);
@@ -141,7 +141,6 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
     }
 
     if(message.deleted === true) {
-        
         messageElement.innerHTML += `
             <div class="message-bubble">
                 <div class="message-content">-- message deleted --</div>
@@ -247,4 +246,10 @@ export async function scrollAtBottom() {
 export async function scrollDown() {
     const messageArea = document.querySelector(".message-area");
     messageArea.scrollTop = messageArea.scrollHeight;
+}
+
+export async function setLatestMessage(msgContents, conversationId) {
+    document.querySelector(`[data-chat-id="${conversationId}"]`)
+        .querySelector('.last-message')
+            .innerHTML = msgContents;
 }

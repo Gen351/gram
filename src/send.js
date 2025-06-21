@@ -2,7 +2,8 @@
 import { supabase } from './supabase/supabaseClient.js';
 import { scrollDown,
         hideReplyContent,
-        removeReply
+        removeReply,
+        setLatestMessage
         } from './updateMessage.js';
 
 // These will be set by main.js whenever a conversation is opened:
@@ -88,5 +89,6 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
         console.error('Error sending message:', sendError.message);
         alert('Failed to send message. Please try again.');
     }
+    setLatestMessage(text, currentConversationId);
     scrollDown();
 }

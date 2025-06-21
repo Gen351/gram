@@ -1,8 +1,11 @@
 import { supabase } from "./supabase/supabaseClient";
 
+import { fetchConversationType } from './supabase/queryFunctions.js';
+
+
 const messageArea = document.querySelector('.message-area');
 
-const likedMessageStyle = '2px dotted red';
+const likedMessageStyle = '2px dashed red';
 
 
 export async function toggleLikeMessage(msgId) {
@@ -58,7 +61,7 @@ export async function appendLatestMessage(message, currentSessionUserId, current
     }
 
     if(message.from == currentSessionUserId || message.to == currentSessionUserId) {
-        fetchConversationType(conversationId);
+        fetchConversationType(currentConvoId);
         await loadMessage(message, currentSessionUserId, currentConvoId);
         scrollDown();
     }
@@ -137,42 +140,58 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
         }
     }
 
-    const highlightIfLiked = message.liked == 'liked' ? "style='border:" + likedMessageStyle + "';" : '';
-
-    messageElement.innerHTML += `
-        <div class="message-bubble">
-            ${replyHTML}
-            <div class="message-sender" ${isSenderNameHidden}>${senderName}</div>
-            <div class="message-content" ${highlightIfLiked}>${message.contents}</div>
-            <div class="message-timestamp">
-                ${date}
-                <pre><br></pre>
+    if(message.deleted === true) {
+        
+        messageElement.innerHTML += `
+            <div class="message-bubble">
+                <div class="message-content">-- message deleted --</div>
+                <div class="message-timestamp">
+                    ${date}
+                    <pre><br></pre>
+                </div>
             </div>
-        </div>
+        `;
+        messageElement.querySelector('.message-content').classList.add('deleted');
+    } else {
+        const highlightIfLiked = message.liked == 'liked' ? 'style="border:' + likedMessageStyle + ';"' : '';
+        
+        messageElement.innerHTML += `
+            <div class="message-bubble">
+                ${replyHTML}
+                <div class="message-sender" ${isSenderNameHidden}>${senderName}</div>
+                <div class="message-content" ${highlightIfLiked}>${message.deleted === true ? `message deleted` : message.contents}</div>
+                <div class="message-timestamp">
+                    ${date}
+                    <pre><br></pre>
+                </div>
+            </div>
+    
+            <div class="message-menu">
+                <button id="message-like-btn" data-msg-id="${message.id}" style="${message.liked == 'liked' ? 'color: red;' : ''}">${message.liked == 'liked' ? '<i class="fi fi-sr-heart"></i>' : '<i class="fi fi-br-heart"></i>'}</button>
+                <button id="message-reply-btn" data-msg-id="${message.id}"><i class="fi fi-sr-undo"></i></button>
+                ${isSentByCurrentUser ? `<button id="message-delete-btn" data-msg-id="${message.id}"><i class="fi fi-br-cross-circle"></i></button>` 
+                : ``}
+            </div>
+        `;
 
-        <div class="message-menu">
-            <button id="message-like-btn" data-msg-id="${message.id}" style="${message.liked == 'liked' ? 'color: red;' : ''}">${message.liked == 'liked' ? '<i class="fi fi-sr-heart"></i>' : '<i class="fi fi-br-heart"></i>'}</button>
-            <button id="message-reply-btn" data-msg-id="${message.id}"><i class="fi fi-sr-undo"></i></button>
-            ${isSentByCurrentUser ? `<button id="message-delete-btn" data-msg-id="${message.id}"><i class="fi fi-br-cross-circle"></i></button>` 
-            : ``}
-        </div>
-    `;
-    
+        const likeBtn = messageElement.querySelector('#message-like-btn');
+        if (likeBtn) { 
+            likeBtn.addEventListener('click', () => {
+                toggleLikeMessage(message.id);
+            });
+        }
+        const replyBtn = messageElement.querySelector('#message-reply-btn');
+        if(replyBtn) {
+            replyBtn.addEventListener('click', () => {
+                showReplyContent();
+                setReplyToId(message.id, message.contents);
+                document.getElementById("message-typed").focus();
+            });
+        }
+    }
+
+
     messageArea.appendChild(messageElement);
-    
-    const likeBtn = messageElement.querySelector('#message-like-btn');
-    if (likeBtn) { 
-        likeBtn.addEventListener('click', () => {
-            toggleLikeMessage(message.id);
-        });
-    }
-    const replyBtn = messageElement.querySelector('#message-reply-btn');
-    if(replyBtn) {
-        replyBtn.addEventListener('click', () => {
-            showReplyContent();
-            setReplyToId(message.id, message.contents);
-        });
-    }
 }
 
 export async function showReplyContent() {

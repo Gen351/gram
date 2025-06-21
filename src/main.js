@@ -109,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = '/index.html';
         });
 
+        
     // --- Dashboard loading functions ---
     async function loadUserProfile(userId, userEmail) {
         if (!profilePicContainer || !profileInitialSpan) return null;
@@ -238,6 +239,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Clear it first before all....
                 messageArea.innerHTML = ``;
+                // if currently replying, remove the replying data
+                removeReply();
+                hideReplyContent();
 
                 document.querySelectorAll('.chat-item').forEach(item => {
                     item.classList.remove('active');

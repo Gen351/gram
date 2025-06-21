@@ -1,38 +1,30 @@
 import { supabase } from "./supabase/supabaseClient";
-
-import { fetchConversationType } from './supabase/queryFunctions.js';
+import { fetchConversationType,
+        toggleLike,
+        setMessageToDeleted
+        } from './supabase/queryFunctions.js';
 
 
 const messageArea = document.querySelector('.message-area');
 
 const likedMessageStyle = '2px dashed red';
 
-
-export async function toggleLikeMessage(msgId) {
-    const { data, error: fetchError } = await supabase
-        .from('message')
-        .select('liked')
-        .eq('id', msgId)
-        .single();
-
-    if (fetchError || !data) {
-        console.error('Failed to fetch liked state:', fetchError);
-        return;
-    }
-    const opp = (data.liked == 'liked') ? "empty" : "liked";
-
-    const { error: updateError } = await supabase
-        .from('message')
-        .update({ liked: opp })
-        .eq('id', msgId);
-
-    if (updateError) { console.error('Failed to update liked state:', updateError); }
-}
-
-
-export async function updateMessage(message) {
+export async function updateMessage(message, date = "") {
     const messageElement = document.querySelector(`[data-msg-id="${message.id}"]`);
     if (!messageElement) return;
+
+    if(message.deleted === true) {
+        messageElement.innerHTML = `
+            <div class="message-bubble">
+                <div class="message-content">-- message deleted --</div>
+                <div class="message-timestamp">
+                    ${date}
+                    <pre><br></pre>
+                </div>
+            </div>
+        `;
+        messageElement.querySelector('.message-content').classList.add('deleted');
+    }
 
     // Update border on message content
     const contentDiv = messageElement.querySelector('.message-content');
@@ -176,7 +168,7 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
         const likeBtn = messageElement.querySelector('#message-like-btn');
         if (likeBtn) { 
             likeBtn.addEventListener('click', () => {
-                toggleLikeMessage(message.id);
+                toggleLike(message.id);
             });
         }
         const replyBtn = messageElement.querySelector('#message-reply-btn');
@@ -185,6 +177,16 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
                 showReplyContent();
                 setReplyToId(message.id, message.contents);
                 document.getElementById("message-typed").focus();
+            });
+        }
+        const deleteBtn = messageElement.querySelector('#message-delete-btn');
+        if(deleteBtn) {
+            deleteBtn.addEventListener('click', () => {
+                const confirmDelete = window.confirm('Delete "' + message.contents + '" ?');
+                if (confirmDelete) {
+                    setMessageToDeleted(message.id);
+                    updateMessage(message, date);
+                }
             });
         }
     }

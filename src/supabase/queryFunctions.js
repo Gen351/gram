@@ -103,3 +103,42 @@ export async function fetchConversationParticipantUsername(conversationID, curre
         return null;
     }
 }
+
+export async function fetchConversationType(conversationId) {
+    const { data: type, error } = await supabase
+        .from('conversation')
+        .select('type')
+        .eq('id', conversationId)
+        .single();
+
+    if(error) {
+        console.error("Error fetching messages:", error.message);
+        return 'direct';
+    }
+    return type;
+}
+
+export async function fetchConversationParticipants(conversationId) {
+    const { data: participants } = await supabase
+        .from('conversation_participant')
+        .select('participant')
+        .eq('conversation_id', conversationId);
+
+    return participants;
+}
+
+export async function fetchMessages(conversationId) {
+    const { data: messages, error } = await supabase
+        .from('message')
+        .select('*')
+        .eq('conversation_id', conversationId) // Updated field name
+        .order('id', { ascending: true });
+
+    if (error) {
+        console.error("Error fetching messages:", error.message);
+        document.querySelector('.message-area').innerHTML = '<p>Error loading messages.</p>';
+        return;
+    }
+
+    return messages;
+}

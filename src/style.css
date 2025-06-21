@@ -537,20 +537,35 @@ body {
     align-items: center;
     gap: 10px;
     font-style: italic;
-    z-index: 10;
+    z-index: 4;
     transition: max-height 0.3s ease, padding 0.3s ease;
 }
 .reply-preview-area.visible {
     display: flex;
     max-height: 80px;
     padding: 10px 14px;
+    justify-content: space-between;
 }
-.reply-preview-area::before {
+
+.reply-preview-content {
+    bottom: 75px;
+    margin: 0 10px;
+    overflow: hidden;
+    font-style: italic;
+}
+.reply-preview-content::before {
     content: "Reply to: ";
     font-weight: bold;
     font-style: normal;
     color: gray;
     opacity: 0.6;
+}
+
+#btn-cancel-reply {
+    background-color: transparent;
+    border: none;
+    font-size: large;
+    color: red;
 }
 
 /* Styling for the message content bubble itself */

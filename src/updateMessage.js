@@ -52,22 +52,22 @@ export async function updateMessage(message) {
 
 export async function appendLatestMessage(message, currentSessionUserId, currentConvoId) {
     if(!messageArea) { return; }
-    // check if the message exists already.
-    // if(document.querySelector(`[data-msg-id="${message.id}"]`) !== null) { return; }
-
-    if(message.conversation_id != currentConvoId) {
-        return;
+    if(currentConvoId && message.conversation_id != currentConvoId) { 
+        console.warn("Not the correct conversation!");
+        return; 
     }
+
     if(message.from == currentSessionUserId || message.to == currentSessionUserId) {
-        await loadMessage(message, currentSessionUserId);
-        await scrollAtBottom();
+        fetchConversationType(conversationId);
+        await loadMessage(message, currentSessionUserId, currentConvoId);
+        scrollDown();
     }
 }
 
 
-export async function loadMessage(message, currentSessionUserId, message_type = 'direct') {
+export async function loadMessage(message, currentSessionUserId, currentConvoId, conversation_type = 'direct') {
     // --- Start: Modify the PREVIOUS message ---
-    
+    if(currentConvoId && currentConvoId != message.conversation_id) { return; }
     // Get the last message element that was already added to the message area
     const lastMessageElement = messageArea.lastElementChild;
 
@@ -100,7 +100,7 @@ export async function loadMessage(message, currentSessionUserId, message_type = 
     const isSentByCurrentUser = message.from === currentSessionUserId;
     messageElement.classList.add('message', isSentByCurrentUser ? 'outgoing' : 'incoming');
     const senderName = (message.profile_from?.username || '');
-    const isSenderNameHidden = (message_type == 'direct') ? 'style="display: none;"' : '';
+    const isSenderNameHidden = (conversation_type == 'direct') ? 'style="display: none;"' : '';
 
     // The new message's timestamp is ALWAYS visible initially.
     const msgDate = new Date(message.created_at);
@@ -152,7 +152,7 @@ export async function loadMessage(message, currentSessionUserId, message_type = 
 
         <div class="message-menu">
             <button id="message-like-btn" data-msg-id="${message.id}" style="${message.liked == 'liked' ? 'color: red;' : ''}">${message.liked == 'liked' ? '<i class="fi fi-sr-heart"></i>' : '<i class="fi fi-br-heart"></i>'}</button>
-            <button id="message-reply-btn" data-msg-id="${message.id}"><i class="fi fi-br-paper-plane-launch"></i></button>
+            <button id="message-reply-btn" data-msg-id="${message.id}"><i class="fi fi-sr-undo"></i></button>
             ${isSentByCurrentUser ? `<button id="message-delete-btn" data-msg-id="${message.id}"><i class="fi fi-br-cross-circle"></i></button>` 
             : ``}
         </div>
@@ -164,66 +164,42 @@ export async function loadMessage(message, currentSessionUserId, message_type = 
     if (likeBtn) { 
         likeBtn.addEventListener('click', () => {
             toggleLikeMessage(message.id);
-            scrollAtBottom();
         });
     }
     const replyBtn = messageElement.querySelector('#message-reply-btn');
     if(replyBtn) {
         replyBtn.addEventListener('click', () => {
-            toggleLikeButtonFunction();
-            setReplyToId(message.id);
+            showReplyContent();
+            setReplyToId(message.id, message.contents);
         });
     }
 }
 
-export async function toggleLikeButtonFunction() {
-    const likeBtnIcon = document.querySelector('#like-icon');
+export async function showReplyContent() {
     const replyBtnIcons = document.querySelectorAll('#message-reply-btn');
+    if (!replyBtnIcons) return;
+    replyBtnIcons.forEach(rplyBtn => {rplyBtn.style.display = 'none';});
+}
 
-    if (!likeBtnIcon || !replyBtnIcons) return;
-
-    const isReplying = likeBtnIcon.dataset.isReplying === 'true';
-
-    if (!isReplying) {
-        likeBtnIcon.style.color = "red";
-        likeBtnIcon.style.opacity = 1;
-        likeBtnIcon.innerHTML = `<i class="fi fi-br-comment-xmark"></i>`;
-        likeBtnIcon.dataset.isReplying = 'true';
-        document.getElementById('message-typed').dataset.replyTo = '';
-
-        likeBtnIcon.addEventListener('click', toggleLikeButtonFunction);
-        
-        replyBtnIcons.forEach(rplyBtn => {
-            rplyBtn.style.display = 'none';
-        });
-    } else {
-        likeBtnIcon.style.color = "white";
-        likeBtnIcon.style.opacity = 0.6;
-        likeBtnIcon.innerHTML = `<i class="fi fi-br-heart"></i>`;
-        likeBtnIcon.dataset.isReplying = 'false';
-        
-        likeBtnIcon.removeEventListener('click', toggleLikeButtonFunction);
-        
-        const preview = document.querySelector('.reply-preview-area');
-        preview.classList.remove('visible');
-        preview.innerHTML = '';
-
-        document.getElementById('message-typed').dataset.replyTo = '';
-
-        replyBtnIcons.forEach(rplyBtn => {
-            rplyBtn.style.display = 'flex';
-        });
-    }
+export async function hideReplyContent() {
+    const replyBtnIcons = document.querySelectorAll('#message-reply-btn');
+    if (!replyBtnIcons) return;
+    replyBtnIcons.forEach(rplyBtn => {rplyBtn.style.display = 'flex';});
 }
 
 // when clicking the reply button, set the reply to according to the data in that reply button
-async function setReplyToId(msgId) { 
+async function setReplyToId(msgId, msgContents) { 
     document.getElementById('message-typed').dataset.replyTo = msgId;
-    
-    const message = await getMessage(msgId);
+
     const preview = document.querySelector('.reply-preview-area');
     preview.classList.add('visible');
-    preview.innerHTML = message.contents;
+    preview.querySelector('.reply-preview-content').innerHTML = msgContents;
+}
+export async function removeReply() {
+    document.getElementById('message-typed').dataset.replyTo = "";
+    const preview = document.querySelector('.reply-preview-area');
+    preview.classList.remove('visible');
+    preview.querySelector('.reply-preview-content').innerHTML = "";
 }
 
 async function getMessage(msgId) {
@@ -247,4 +223,9 @@ export async function scrollAtBottom() {
     const atBottom = messageArea.scrollTop + messageArea.clientHeight >= messageArea.scrollHeight - 10;
     if (!atBottom) { scrollToBottomBtn.style.display = "block"; }
     else { scrollToBottomBtn.style.display = "none"; }
+}
+
+export async function scrollDown() {
+    const messageArea = document.querySelector(".message-area");
+    messageArea.scrollTop = messageArea.scrollHeight;
 }

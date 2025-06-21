@@ -1,6 +1,9 @@
 // src/send.js
 import { supabase } from './supabase/supabaseClient.js';
-import { toggleLikeButtonFunction, scrollAtBottom } from './updateMessage.js';
+import { scrollDown,
+        hideReplyContent,
+        removeReply
+        } from './updateMessage.js';
 
 // These will be set by main.js whenever a conversation is opened:
 let currentConversationId = null;
@@ -66,8 +69,9 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
 
         if (replyTo !== '') {
             newMessage.reply_to = replyTo;
-            toggleLikeButtonFunction(); // change the messaging back to not replying...
-            await scrollAtBottom();
+            // change the messaging back to not replying...
+            hideReplyContent();
+            removeReply();
         }
 
         const { error } = await supabase
@@ -84,4 +88,5 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
         console.error('Error sending message:', sendError.message);
         alert('Failed to send message. Please try again.');
     }
+    scrollDown();
 }

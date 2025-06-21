@@ -5,7 +5,10 @@ import { setConversationContext } from './send.js';
 import { loadMessage, 
         appendLatestMessage,
         updateMessage,
-        scrollAtBottom
+        scrollAtBottom,
+        scrollDown,
+        removeReply,
+        hideReplyContent
         } from './updateMessage.js';
 
 import { fetchProfile, 
@@ -13,7 +16,10 @@ import { fetchProfile,
         fetchConversationIds, 
         fetchConversationData,
         fetchRecentMessages,
-        fetchConversationParticipantUsername
+        fetchConversationParticipantUsername,
+        fetchConversationType,
+        fetchConversationParticipants,
+        fetchMessages
         } from './supabase/queryFunctions.js';
 
 
@@ -62,11 +68,6 @@ supaChannel
 // async function addAConvo
 
 /////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
 document.addEventListener('DOMContentLoaded', () => {
     // --- Initial UI setup (if elements exist) ---
     if (recipientNameElement) {
@@ -233,12 +234,16 @@ document.addEventListener('DOMContentLoaded', () => {
             convoList.appendChild(chatItem);
 
             chatItem.addEventListener('click', async () => {
+                if(chatItem.classList.contains('active')) return;
+                
+                // Clear it first before all....
+                messageArea.innerHTML = ``;
+
                 document.querySelectorAll('.chat-item').forEach(item => {
                     item.classList.remove('active');
                 });
                 chatItem.classList.add('active');
 
-                const chosenConversationId = chatItem.dataset.chatId;
                 const chosenConversationName = displayName;
 
                 if (recipientNameElement) {
@@ -257,8 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                                 `;
                 }
 
-                await loadConversationMessages(chosenConversationId);
-                currentConvoId = chosenConversationId;
+                currentConvoId = chatItem.dataset.chatId;
+                await loadConversationMessages(currentConvoId);
             });
         }
     }
@@ -271,6 +276,13 @@ document.addEventListener('DOMContentLoaded', () => {
             profileDropdown.classList.toggle('active');
         });
     }
+
+
+    // --- Cancel Reply Button ---
+    document.getElementById('btn-cancel-reply').addEventListener('click', () => {
+        removeReply();
+        hideReplyContent();
+    });
 
     // --- Hide Dropdown if Clicked Outside ---
     document.addEventListener('click', (event) => {
@@ -346,79 +358,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /////////////////////////////////////////////////////////////////////////////
 // Choosing a conversation functions /////////////////////////////////////////
-
-
 async function loadConversationMessages(conversationId) {
-    if (!messageArea) {
-        console.error("Message area not found!");
+    if (!messageArea) { console.error("Message area not found!"); return; }
+    
+    // Fetch messages for the given conversation ID, ordered by creation time
+    const messages = await fetchMessages(conversationId);
+
+    // Set the context for sending messages in send.js
+    const participants = await fetchConversationParticipants(conversationId);
+
+    if (participants && participants.length === 2) {
+        // 2) Find the “other” user:
+        const otherUserId = participants.find(p => p.participant !== currentSessionUserId).participant;
+
+        // 3) Now you know both IDs—call setConversationContext.
+        setConversationContext(conversationId, currentSessionUserId, otherUserId);
+    }
+    // For getting the message type
+    let conversation_type = 'direct'; 
+    conversation_type = await fetchConversationType(conversationId);
+
+    if (messages.length === 0) {
+        messageArea.innerHTML = '<p style="text-align: center; color: var(--text-dark);">No messages yet. Start chatting!</p>';
         return;
     }
-    try {
-        // Fetch messages for the given conversation ID, ordered by creation time
-        const { data: messages, error } = await supabase
-                .from('message')
-                .select('*')
-                .eq('conversation_id', conversationId) // Updated field name
-                .order('id', { ascending: true });
-            
-            if (error) {
-                console.error("Error fetching messages:", error.message);
-                messageArea.innerHTML = '<p>Error loading messages.</p>';
-                return;
-            }
-            
-            // Set the context for sending messages in send.js
-            const { data: participants } = await supabase
-                    .from('conversation_participant')
-                    .select('participant')
-                    .eq('conversation_id', conversationId);
-
-            if (participants && participants.length === 2) {
-                // 2) Find the “other” user:
-                const otherUserId = participants.find(p => p.participant !== currentSessionUserId).participant;
-
-                // 3) Now you know both IDs—call setConversationContext.
-                setConversationContext(conversationId, currentSessionUserId, otherUserId);
-            }
-
-            // For getting the message type
-            let message_type = 'direct'; 
-            try {
-                const { data: type, error } = await supabase
-                        .from('conversation')
-                        .select('type')
-                        .eq('id', conversationId)
-                        .single();
-                message_type = type;
-
-                if(error) {
-                    console.error("Error fetching messages:", error.message);
-                    return;
-                }
-            } catch(fetchError) {
-                // huh unsaon mani?
-            }
-
-
-            messageArea.innerHTML = ''; // Clear previous messages
-            
-            if (messages.length === 0) {
-                messageArea.innerHTML = '<p style="text-align: center; color: var(--text-dark);">No messages yet. Start chatting!</p>';
-                return;
-            }
-            
-            // Loading the message
-            for (const message of messages) {
-                await loadMessage(message, currentSessionUserId, message_type);
-            }
-            
-            // Scroll to the bottom of the message area
-            messageArea.scrollTop = messageArea.scrollHeight;
-            
-        } catch (fetchError) {
-            console.error('Critical error loading messages:', fetchError.message);
-            messageArea.innerHTML = '<p>Failed to load messages due to an unexpected error.</p>';
-        }
+    // Loading the message
+    for (const message of messages) {
+        await loadMessage(message, currentSessionUserId, currentConvoId, conversation_type);
+    }
+    scrollDown();
 }
 
 // Choosing a conversation functions end /////////////////////////////////////

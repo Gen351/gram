@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // SETUP WALLPAPER ///////////////////////////////////////
     canvas = document.getElementById('message-area-bg');
     wallpaperImage = new Image();
-    wallpaperImage.src = '../space.svg';
+    wallpaperImage.src = '/space.svg';
 
     wallpaperImage.onload = () => {
         drawStaticBackground();

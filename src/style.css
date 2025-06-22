@@ -498,12 +498,12 @@ body {
 /* Container for the reply part */
 .message-reply-preview {
     display: flex;
-    align-items: center; /* Changed from flex-start to center */
+    align-items: center;
     gap: 8px;
     padding: 6px 12px;
-    border-radius: var(--border-radius-md) var(--border-radius-md) 0 0; /* Rounded top corners */
-    background-color: rgba(0, 0, 0, 0.2); /* Darker, transparent bg */
-    margin-bottom: -2px; /* Pull the message content up slightly */
+    border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    margin-bottom: -2px;
     max-width: 45vw; /* Match message content max-width */
     position: relative;
     z-index: 1;
@@ -604,17 +604,18 @@ body {
     z-index: 3; /* Ensure content is on top of reply margin */
 }
 
-.message-content.deleted {
+.message.outgoing .message-content.deleted, .message.incoming .message-content.deleted {
     font-style: italic;
     font-weight: 200;
     font-size: smaller;
-    color:#2b2b2b;
+    background-color: rgba(0, 0, 0, 0.2);
 }
 .reply-text.deleted {
     font-style: italic;
     font-weight: 200;
     font-size: smaller;
     color:#2b2b2b;
+    background-color: rgba(0, 0, 0, 0.2);
 }
 .last-message.deleted {
     font-style: italic;

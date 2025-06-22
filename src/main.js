@@ -232,8 +232,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="chat-info">
                     <div class="chat-name">${displayName || 'Unknown User'}</div>
-                    <div class="last-message" data-msg-id="${recentMessages[0].id}">${recentMessages[0].deleted === true ? '-- message deleted --' : lastMessageText}</div>
-                </div> 
+                    <div class="last-message ${recentMessages[0].deleted === true ? 'deleted' : ''}" data-msg-id="${recentMessages[0].id}">${recentMessages[0].deleted === true ? '-- message deleted --' : lastMessageText}</div>
+                </div>
             `;
             convoList.appendChild(chatItem);
 

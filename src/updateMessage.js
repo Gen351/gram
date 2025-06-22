@@ -1,8 +1,7 @@
 import { supabase } from "./supabase/supabaseClient";
 import { fetchConversationType,
         toggleLike,
-        setMessageToDeleted,
-        fetchRecentMessages
+        setMessageToDeleted
         } from './supabase/queryFunctions.js';
 
 
@@ -11,10 +10,18 @@ const messageArea = document.querySelector('.message-area');
 const likedMessageStyle = '2px dashed red';
 
 export async function updateMessage(message, date = ""/* magamit siguro sunod */) {
-    const messageElement = document.querySelector(`[data-msg-id="${message.id}"]`);
+    const messageElement = document.querySelector(`.message[data-msg-id="${message.id}"]`);
     if (!messageElement) return;
 
     if(message.deleted === true) {
+        const replyTexts = document.querySelectorAll(`.reply-text[data-msg-id="${message.id}"]`);
+        if(replyTexts) {
+            replyTexts.forEach(replyElement => {
+                replyElement.classList.add('deleted');
+                replyElement.innerHTML = `-- message deleted --`;
+            });
+        }
+
         messageElement.innerHTML = `
             <div class="message-bubble">
                 <div class="message-content">-- message deleted --</div>
@@ -23,6 +30,7 @@ export async function updateMessage(message, date = ""/* magamit siguro sunod */
             </div>
         `;
         messageElement.querySelector('.message-content').classList.add('deleted');
+        return;
     }
 
     // Update border on message content
@@ -121,7 +129,7 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
                 <div class="message-reply-preview">
                     <div class="reply-bar"></div>
                     <div class="reply-content">
-                        <div class="reply-text">${repliedPreview}</div>
+                        <div class="reply-text ${replied_message.deleted === true ? 'deleted' : ''}" data-msg-id="${replied_message.id}">${replied_message.deleted === true ? '-- message deleted --' : repliedPreview}</div>
                     </div>
                 </div>
             `;

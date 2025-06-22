@@ -513,7 +513,7 @@ body {
 .reply-bar {
     width: 3px;
     align-self: stretch; /* Make the bar fill the height */
-    background-color: var(--text-light);
+    background-color: gray;
     border-radius: 3px;
 }
 
@@ -539,6 +539,7 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
 
 .reply-preview-area {
     position: absolute;
@@ -609,6 +610,17 @@ body {
     font-size: smaller;
     color:#2b2b2b;
 }
+.reply-text.deleted {
+    font-style: italic;
+    font-weight: 200;
+    font-size: smaller;
+    color:#2b2b2b;
+}
+.last-message.deleted {
+    font-style: italic;
+    font-weight: 200;
+    font-size: smaller;
+}
 
 /* When a reply exists, modify the content's border radius */
 .message.incoming > .message-reply-preview + .message-content {
@@ -670,9 +682,6 @@ body {
 .message.outgoing .reply-sender,
 .message.outgoing .reply-text {
     color: var(--text-light); /* Make reply text lighter on dark blue bg */
-}
-.message.outgoing .reply-bar {
-    background-color: #fff;
 }
 
 

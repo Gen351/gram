@@ -56,7 +56,8 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
 
     // 2) Read and trim the input
     const text = messageInput.value.trim();
-    const replyTo = messageInput.dataset.replyTo; // use `dataset`, not `.data`
+    const replyTo = messageInput.dataset.replyTo;
+    const convoId = messageInput.dataset.convoId;
     if (!text) return;
 
     try {
@@ -69,8 +70,13 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
         };
 
         if (replyTo !== '') {
-            newMessage.reply_to = replyTo;
-            // change the messaging back to not replying...
+            if(convoId !== '' && convoId == currentConversationId) {
+                newMessage.reply_to = replyTo;
+                // change the messaging back to not replying...
+            } else {
+                console.log("Cannot Reply, Wrong Conversation Id!")
+            }
+            
             hideReplyContent();
             removeReply();
         }

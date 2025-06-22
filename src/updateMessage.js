@@ -1,7 +1,8 @@
 import { supabase } from "./supabase/supabaseClient";
 import { fetchConversationType,
         toggleLike,
-        setMessageToDeleted
+        setMessageToDeleted,
+        fetchRecentMessages
         } from './supabase/queryFunctions.js';
 
 
@@ -9,7 +10,7 @@ const messageArea = document.querySelector('.message-area');
 
 const likedMessageStyle = '2px dashed red';
 
-export async function updateMessage(message, date = "") {
+export async function updateMessage(message, date = ""/* magamit siguro sunod */) {
     const messageElement = document.querySelector(`[data-msg-id="${message.id}"]`);
     if (!messageElement) return;
 
@@ -46,7 +47,7 @@ export async function updateMessage(message, date = "") {
 export async function appendLatestMessage(message, currentSessionUserId, currentConvoId) {
     if(!messageArea) { return; }
     
-    setLatestMessage(message.contents, message.conversation_id);
+    setLatestMessage(message.contents, message.conversation_id, message.deleted);
 
     if(!currentConvoId || message.conversation_id != currentConvoId) { 
         console.warn("Not the correct conversation!");
@@ -173,7 +174,7 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
         if(replyBtn) {
             replyBtn.addEventListener('click', () => {
                 showReplyContent();
-                setReplyToId(message.id, message.contents);
+                setReplyToId(message.id, message.contents, message.conversation_id);
                 document.getElementById("message-typed").focus();
             });
         }
@@ -205,16 +206,19 @@ export async function hideReplyContent() {
     replyBtnIcons.forEach(rplyBtn => {rplyBtn.style.display = 'flex';});
 }
 
-// when clicking the reply button, set the reply to according to the data in that reply button
-async function setReplyToId(msgId, msgContents) { 
+async function setReplyToId(msgId, msgContents, convoId) { 
     document.getElementById('message-typed').dataset.replyTo = msgId;
+    document.getElementById('message-typed').dataset.convoId = convoId;
 
     const preview = document.querySelector('.reply-preview-area');
     preview.classList.add('visible');
     preview.querySelector('.reply-preview-content').innerHTML = msgContents;
+    
 }
 export async function removeReply() {
     document.getElementById('message-typed').dataset.replyTo = "";
+    document.getElementById('message-typed').dataset.convoId = "";
+
     const preview = document.querySelector('.reply-preview-area');
     preview.classList.remove('visible');
     preview.querySelector('.reply-preview-content').innerHTML = "";
@@ -248,9 +252,13 @@ export async function scrollDown() {
     messageArea.scrollTop = messageArea.scrollHeight;
 }
 
-export async function setLatestMessage(msgContents, conversationId) {
+export async function setLatestMessage(msgContents, conversationId, isDeleted = false) {
     const latest = document.querySelector(`[data-chat-id="${conversationId}"]`);
     if(latest) {
-        latest.querySelector('.last-message').innerHTML = msgContents;
+        if(isDeleted) {
+
+        } else {
+            latest.querySelector('.last-message').innerHTML = msgContents;
+        }
     }
 }

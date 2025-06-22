@@ -8,7 +8,8 @@ import { loadMessage,
         scrollAtBottom,
         scrollDown,
         removeReply,
-        hideReplyContent
+        hideReplyContent,
+        setLatestMessage
         } from './updateMessage.js';
 
 import { fetchProfile, 
@@ -48,8 +49,10 @@ supaChannel
     }, (payload) => {
         if(payload.eventType === 'INSERT') {
             appendLatestMessage(payload.new, currentSessionUserId, currentConvoId);
+            setLatestMessage(payload.new, true);
         } else if (payload.eventType === 'UPDATE') {
             updateMessage(payload.new);
+            setLatestMessage(payload.new);
         } else if (payload.eventType === 'DELETE') {
             // No deletes yet
         } else {
@@ -229,8 +232,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="chat-info">
                     <div class="chat-name">${displayName || 'Unknown User'}</div>
-                    <div class="last-message">${lastMessageText}</div>
-                </div>
+                    <div class="last-message" data-msg-id="${recentMessages[0].id}">${recentMessages[0].deleted === true ? '-- message deleted --' : lastMessageText}</div>
+                </div> 
             `;
             convoList.appendChild(chatItem);
 

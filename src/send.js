@@ -2,8 +2,7 @@
 import { supabase } from './supabase/supabaseClient.js';
 import { scrollDown,
         hideReplyContent,
-        removeReply,
-        setLatestMessage
+        removeReply
         } from './updateMessage.js';
 
 // These will be set by main.js whenever a conversation is opened:
@@ -76,12 +75,12 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
             } else {
                 console.log("Cannot Reply, Wrong Conversation Id!")
             }
-            
+
             hideReplyContent();
             removeReply();
         }
 
-        const { error } = await supabase
+        const { data:newMessageInserted, error } = await supabase
             .from('message')
             .insert(newMessage)
             .select()
@@ -95,6 +94,5 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
         console.error('Error sending message:', sendError.message);
         alert('Failed to send message. Please try again.');
     }
-    setLatestMessage(text, currentConversationId);
     scrollDown();
 }

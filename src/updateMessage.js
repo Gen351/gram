@@ -46,13 +46,8 @@ export async function updateMessage(message, date = ""/* magamit siguro sunod */
 
 export async function appendLatestMessage(message, currentSessionUserId, currentConvoId) {
     if(!messageArea) { return; }
-    
-    setLatestMessage(message.contents, message.conversation_id, message.deleted);
 
-    if(!currentConvoId || message.conversation_id != currentConvoId) { 
-        console.warn("Not the correct conversation!");
-        return; 
-    }
+    if(!currentConvoId || message.conversation_id != currentConvoId) { return; }
 
     if(message.from == currentSessionUserId || message.to == currentSessionUserId) {
         fetchConversationType(message.conversation_id);
@@ -252,13 +247,16 @@ export async function scrollDown() {
     messageArea.scrollTop = messageArea.scrollHeight;
 }
 
-export async function setLatestMessage(msgContents, conversationId, isDeleted = false) {
-    const latest = document.querySelector(`[data-chat-id="${conversationId}"]`);
-    if(latest) {
-        if(isDeleted) {
-
+export async function setLatestMessage(message, isAllowed = false) {
+    const latest = document.querySelector(`[data-chat-id="${message.conversation_id}"]`);
+    if((latest && latest.querySelector(`[data-msg-id="${message.id}"]`))
+        || (latest && isAllowed === true)) { // if the chat exists, and if the chat's latest is the updated
+        if(message.deleted) {
+            latest.querySelector('.last-message').innerHTML = '-- message deleted --';
+            latest.querySelector('.last-message').dataset.msgId = message.id;
         } else {
-            latest.querySelector('.last-message').innerHTML = msgContents;
+            latest.querySelector('.last-message').innerHTML = message.contents;
+            latest.querySelector('.last-message').dataset.msgId = message.id;
         }
     }
 }

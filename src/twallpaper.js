@@ -3,7 +3,7 @@ let wallpaperImage;
 document.addEventListener('DOMContentLoaded', () => {
     canvas = document.getElementById('message-area-bg');
     wallpaperImage = new Image();
-    wallpaperImage.src = './space.svg'; // renamed your PNG file for simplicity
+    wallpaperImage.src = './public/space.svg'; // renamed your PNG file for simplicity
 
     wallpaperImage.onload = () => {
         drawStaticBackground();

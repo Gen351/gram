@@ -13,6 +13,7 @@
         /* search icon */
         /* scroll down button */
         @import url('https://cdn-uicons.flaticon.com/3.0.0/uicons-bold-rounded/css/uicons-bold-rounded.css');
+        /* trash can button */
         /* heart icon */
         @import url('https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-rounded/css/uicons-solid-rounded.css');
         /* Font style */
@@ -69,6 +70,12 @@
                 </div>
             </div>
             
+            <!-- For the bg -->
+            <div id="wallpaper-container">
+                <canvas id="message-area-bg"></canvas>
+                <div class="pattern-overlay"></div>
+            </div>
+
             <div class="message-area">
                 <!-- the messages here -->
             </div>
@@ -106,5 +113,6 @@
     </div>
 
     <script type="module" src="/src/main.js"></script>
+    <script src="/src/twallpaper.js"></script>
 </body>
 </html>

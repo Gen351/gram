@@ -57,15 +57,47 @@ body {
     overflow: hidden; /* Prevent body scroll if content fits */
 }
 
-/* for the wallpaper */
-.tw-wrap {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
+
+
+#wallpaper-container {
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    
+    pointer-events: none; /* clicks go through */
 }
 
+#message-area-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    
+    width: 100%;
+    height: auto;
+
+    z-index: 0;
+    opacity: 0.8;
+
+    pointer-events: none; /* clicks go through */
+}
+
+.pattern-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: auto;
+    background-image: url('./space.svg');
+    background-repeat: repeat;
+    background-size: 250px;
+    mix-blend-mode: soft-light; /* or try 'overlay' or 'multiply' */
+    opacity: 0.25;
+    pointer-events: none; /* clicks go through */
+}
 
 .messenger-container {
     display: flex;
@@ -362,6 +394,8 @@ body {
     background-color: var(--bg-secondary);
 
     max-height: 75px;
+
+    z-index: 1;
 }
 
 .conversation-header .recipient-info {
@@ -402,7 +436,7 @@ body {
     flex-direction: column; /* Stack messages vertically */
     gap: 10px; /* Gap between messages */
 
-    background-color: transparent;
+    background-color: #ffffff05;
 }
 
 /* .message-area {
@@ -687,9 +721,8 @@ body {
 
 
 /* --- Message Menu & Hover --- */
-
 .message:hover {
-    background-color: #222222;
+    background-color: rgba(34, 34, 34, 0.2);
 }
 
 .message:hover .message-menu {
@@ -724,6 +757,8 @@ body {
 .message-menu button:hover {
     color: var(--text-light);
     background-color: var(--bg-tertiary);
+
+    transform: scale(1.1);
 }
 
 /* --- Timestamp & Sender --- */
@@ -748,6 +783,8 @@ body {
     padding: 10px 20px;
     border-top: 1px solid var(--border-color);
     background-color: var(--bg-secondary);
+
+    z-index: 1;
 }
 
 .message-input-area .icon-button {

@@ -51,7 +51,7 @@ supaChannel
         } else if (payload.eventType === 'UPDATE') {
             updateMessage(payload.new);
         } else if (payload.eventType === 'DELETE') {
-
+            // No deletes yet
         } else {
             console.log(payload.eventType, "Don't know what to do...");
         }

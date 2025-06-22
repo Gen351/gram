@@ -18,8 +18,6 @@ export async function updateMessage(message, date = "") {
             <div class="message-bubble">
                 <div class="message-content">-- message deleted --</div>
                 <div class="message-timestamp">
-                    ${date}
-                    <pre><br></pre>
                 </div>
             </div>
         `;
@@ -47,7 +45,10 @@ export async function updateMessage(message, date = "") {
 
 export async function appendLatestMessage(message, currentSessionUserId, currentConvoId) {
     if(!messageArea) { return; }
-    if(currentConvoId && message.conversation_id != currentConvoId) { 
+    
+    setLatestMessage(message.contents, message.conversation_id);
+
+    if(!currentConvoId || message.conversation_id != currentConvoId) { 
         console.warn("Not the correct conversation!");
         return; 
     }
@@ -55,7 +56,6 @@ export async function appendLatestMessage(message, currentSessionUserId, current
     if(message.from == currentSessionUserId || message.to == currentSessionUserId) {
         fetchConversationType(message.conversation_id);
         await loadMessage(message, currentSessionUserId, message.conversation_id);
-        setLatestMessage(message.contents, message.conversation_id);
         scrollDown();
     }
 }
@@ -137,8 +137,6 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
             <div class="message-bubble">
                 <div class="message-content">-- message deleted --</div>
                 <div class="message-timestamp">
-                    ${date}
-                    <pre><br></pre>
                 </div>
             </div>
         `;
@@ -251,7 +249,8 @@ export async function scrollDown() {
 }
 
 export async function setLatestMessage(msgContents, conversationId) {
-    document.querySelector(`[data-chat-id="${conversationId}"]`)
-        .querySelector('.last-message')
-            .innerHTML = msgContents;
+    const latest = document.querySelector(`[data-chat-id="${conversationId}"]`);
+    if(latest) {
+        latest.querySelector('.last-message').innerHTML = msgContents;
+    }
 }

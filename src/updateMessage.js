@@ -97,6 +97,7 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
     const messageElement = document.createElement('div');
     messageElement.dataset.timestamp = message.created_at; // Crucial for the *next* message
     messageElement.dataset.msgId = message.id; // for querying the message
+    messageElement.dataset.convoId = message.conversation_id; // for purging messages that don't belong to the conversation
     const isSentByCurrentUser = message.from === currentSessionUserId;
     messageElement.classList.add('message', isSentByCurrentUser ? 'outgoing' : 'incoming');
     const senderName = (message.profile_from?.username || '');

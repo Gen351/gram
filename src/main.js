@@ -22,10 +22,14 @@ import { fetchProfile,
         fetchMessages
         } from './supabase/queryFunctions.js';
 
+import { wallpaperParse } from './wallpaperParser.js'; 
 
 // FOR THE WALLPAPER ///////////////////////
 let canvas;
 let wallpaperImage;
+let color_scheme;
+
+let conversations = {};
 ////////////////////////////////////////////
 
 
@@ -66,23 +70,27 @@ function initializeUserChannel(userId) {
 
 /////////////////////////////////////////////////////////////////////////////////
 document.addEventListener('DOMContentLoaded', () => {
-    
     // SETUP WALLPAPER ///////////////////////////////////////
     canvas = document.getElementById('message-area-bg');
-    wallpaperImage = new Image();
-    wallpaperImage.src = '/space.svg';
+    (async () => {
+        const parsed = await wallpaperParse('space');
+        wallpaperImage = parsed.wallpaperImage;
+        color_scheme = parsed.colors;
 
-    wallpaperImage.onload = () => {
-        drawStaticBackground();
-    };
-    wallpaperImage.onerror = () => {
-        console.error("Failed to load the wallpaper image.");
-    };
-    window.addEventListener('resize', () => {
-        drawStaticBackground();
-    });
+        wallpaperImage.onload = () => {
+            drawStaticBackground(color_scheme);
+        };
+        wallpaperImage.onerror = () => {
+            console.error("Failed to load the wallpaper image.");
+        };
+
+        // Manually trigger in case the image was cached
+        if (wallpaperImage.complete) drawStaticBackground(color_scheme);
+
+        window.addEventListener('resize', () => drawStaticBackground(color_scheme));
+    })();
     
-    function drawStaticBackground() {
+    function drawStaticBackground(color_scheme) {
         const ctx = canvas.getContext('2d');
         // Fullscreen canvas
 
@@ -98,11 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- 1. Gradient Background ---
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, '#000000');
-        gradient.addColorStop(0.12, '#222222');
-        gradient.addColorStop(0.66, '#999999');
-        gradient.addColorStop(0.77, '#AAAAAA');
-        gradient.addColorStop(1, '#888888');
+        gradient.addColorStop(0, color_scheme.a);
+        gradient.addColorStop(0.12, color_scheme.b);
+        gradient.addColorStop(0.66, color_scheme.c);
+        gradient.addColorStop(0.77, color_scheme.d);
+        gradient.addColorStop(1, color_scheme.e);
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         // --- 2. Draw smaller, manually repeated SVG ---
@@ -468,9 +476,14 @@ async function loadConversationMessages(conversationId) {
         return;
     }
     // Loading the message
-    for (const message of messages) {
-        await loadMessage(message, currentSessionUserId, currentConvoId, conversation_type);
-    }
+    await Promise.all(messages.map(message => 
+        loadMessage(message, currentSessionUserId, currentConvoId, conversation_type)
+    ));
+
+    // Purge the saag na messages
+    const sus = document.querySelectorAll(`.message:not([data-convo-id="${currentConvoId}"])`);
+    sus.forEach(msg => msg.remove());
+
     scrollDown();
 }
 

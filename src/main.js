@@ -143,21 +143,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closePanelButton) {
         closePanelButton.addEventListener('click', () => {
             leftPanel.classList.remove('open');
+            closePanelButton
         });
     }
-
     /////////////////////////////////////////////////////////////////////////
 
-
-
-
-
-
-
-
+    
     // --- Initial UI setup (if elements exist) ---
     if (recipientNameElement) {
-        recipientNameElement.textContent = 'Choose a conversation...';
+        recipientNameElement.textContent = 'No Conversation Selected...';
     }
 
     // --- Session Check & User Profile Initialization ---

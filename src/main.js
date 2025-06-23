@@ -454,7 +454,7 @@ async function loadConversationMessages(conversationId) {
     let participants;
 
     // The core caching logic
-    if (/*!session_conversations[conversationId]*/true) {
+    if (!session_conversations[conversationId]) {
         console.log(`Cache miss for ${conversationId}. Fetching from server...`);
         // 1. Fetch data ONCE.
         const [fetchedMessages, fetchedParticipants, convoName, convoType] = await Promise.all([

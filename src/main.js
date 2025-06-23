@@ -3,7 +3,6 @@ import { supabase } from './supabase/supabaseClient.js';
 import { setConversationContext } from './send.js';
 import { loadMessage, 
         appendLatestMessage,
-        updateMessage,
         scrollAtBottom,
         scrollDown,
         removeReply,
@@ -29,7 +28,16 @@ let canvas;
 let wallpaperImage;
 let color_scheme;
 
-let conversations = {};
+let session_conversations = {};
+/* FORMAT
+    session_conversations[conversationId] = {
+        convo_name: convoName,
+        convo_participants: fetchedParticipants,
+        messages: fetchedMessages,
+        conversation_type: convoType,
+        style: {}
+    };
+*/
 ////////////////////////////////////////////
 
 
@@ -259,22 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Step 3: map over them to compute displayName
             return conversations.map(convo => {
-            let displayName = convo.conversation_name;
-
-            if (convo.type === 'group') {
-                displayName = convo.group?.group_name || `Group Chat ${convo.id}`;
-            } else {
-                // guard: ensure participants array exists
-                const participants = Array.isArray(convo.conversation_participant)
-                ? convo.conversation_participant
-                : [];
-
-                // find the other user
-                const other = participants.find(p => p.participant !== userId);
-                displayName = other?.profile?.username || `Chat ${convo.id}`;
-            }
-
-            return { ...convo, displayName };
+                return convo;
             });
         } catch (err) {
             console.error('Error fetching conversations for user:', err.message || err);
@@ -293,14 +286,22 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        for (const convo of conversations) {
+
+        const conversationRenderData = await Promise.all(conversations.map(async convo => {
+            const [displayName, recentMessages] = await Promise.all([
+                fetchConversationParticipantUsername(convo.id, userId),
+                fetchRecentMessages(convo.id)
+            ]);
+
+            return { convo, displayName, recentMessages };
+        }));
+
+
+        for (const { convo, displayName, recentMessages } of conversationRenderData) {
             const chatItem = document.createElement('div');
             chatItem.classList.add('chat-item');
             chatItem.dataset.chatId = convo.id;
 
-            // ✅ Await the username
-            const displayName = await fetchConversationParticipantUsername(convo.id, userId);
-            const recentMessages = await fetchRecentMessages(convo.id);
             const lastMessageText = recentMessages.length > 0 ? recentMessages[0].contents : 'Tap to open chat...';
 
             chatItem.innerHTML = `
@@ -318,41 +319,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="chat-info">
                     <div class="chat-name">${displayName || 'Unknown User'}</div>
-                    <div class="last-message ${recentMessages[0].deleted === true ? 'deleted' : ''}" data-msg-id="${recentMessages[0].id}">${recentMessages[0].deleted === true ? '-- message deleted --' : lastMessageText}</div>
+                    <div class="last-message ${recentMessages[0]?.deleted ? 'deleted' : ''}" data-msg-id="${recentMessages[0]?.id}">
+                        ${recentMessages[0]?.deleted ? '-- message deleted --' : lastMessageText}
+                    </div>
                 </div>
             `;
+
             convoList.appendChild(chatItem);
 
             chatItem.addEventListener('click', async () => {
-                if(chatItem.classList.contains('active')) return;
-                
-                // Clear it first before all....
+                if (chatItem.classList.contains('active')) return;
+
                 messageArea.innerHTML = ``;
-                // if currently replying, remove the replying data
                 removeReply();
                 hideReplyContent();
 
-                document.querySelectorAll('.chat-item').forEach(item => {
-                    item.classList.remove('active');
-                });
+                document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
                 chatItem.classList.add('active');
 
-                const chosenConversationName = displayName;
-
                 if (recipientNameElement) {
-                    recipientNameElement.textContent = chosenConversationName;
-                    
+                    recipientNameElement.textContent = displayName;
                     const recipientAvatar = document.querySelector('.recipient-avatar');
                     recipientAvatar.innerHTML = `
-                                                <img src="https://ui-avatars.com/api/?name=${displayName}
-                                                    &size=40
-                                                    &background=${displayName.charCodeAt(0) * 6500}
-                                                    &color=${displayName.charCodeAt(displayName.length - 1) * 900}
-                                                    &length=3
-                                                    &rounded=true
-                                                    &bold=true
-                                                ">
-                                                `;
+                        <img src="https://ui-avatars.com/api/?name=${displayName}
+                            &size=40
+                            &background=${displayName.charCodeAt(0) * 6500}
+                            &color=${displayName.charCodeAt(displayName.length - 1) * 900}
+                            &length=3
+                            &rounded=true
+                            &bold=true
+                        ">
+                    `;
                 }
 
                 currentConvoId = chatItem.dataset.chatId;
@@ -360,7 +357,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
-
 
     // --- Profile Dropdown Toggle Logic ---
     if (profilePicContainer && profileDropdown) {
@@ -453,34 +449,66 @@ document.addEventListener('DOMContentLoaded', () => {
 // Choosing a conversation functions /////////////////////////////////////////
 async function loadConversationMessages(conversationId) {
     if (!messageArea) { console.error("Message area not found!"); return; }
-    
-    // Fetch messages for the given conversation ID, ordered by creation time
-    const messages = await fetchMessages(conversationId);
 
-    // Set the context for sending messages in send.js
-    const participants = await fetchConversationParticipants(conversationId);
+    let messages;
+    let participants;
 
+    // The core caching logic
+    if (/*!session_conversations[conversationId]*/true) {
+        console.log(`Cache miss for ${conversationId}. Fetching from server...`);
+        // 1. Fetch data ONCE.
+        const [fetchedMessages, fetchedParticipants, convoName, convoType] = await Promise.all([
+            fetchMessages(conversationId),
+            fetchConversationParticipants(conversationId),
+            fetchConversationParticipantUsername(conversationId, currentSessionUserId),
+            fetchConversationType(conversationId)
+        ]);
+
+        // 2. IMMEDIATELY cache the fetched data.
+        if(!session_conversations[conversationId]) {
+            session_conversations[conversationId] = {
+                convo_name: convoName,
+                convo_participants: fetchedParticipants,
+                messages: fetchedMessages,
+                conversation_type: convoType,
+                style: {}
+            };
+            console.log("Cached", conversationId, session_conversations[conversationId]);
+        }
+        
+        // 3. Use the data you just fetched for the current view.
+        messages = fetchedMessages;
+        participants = fetchedParticipants;
+
+
+    } else {
+        console.log(`Cache hit for ${conversationId}. Loading from session.`);
+        // Load directly from the cache
+        messages = session_conversations[conversationId].messages;
+        participants = session_conversations[conversationId].convo_participants;
+    }
+
+    // --- The rest of your function remains largely the same ---
     if (participants && participants.length === 2) {
-        // 2) Find the “other” user:
         const otherUserId = participants.find(p => p.participant !== currentSessionUserId).participant;
-
-        // 3) Now you know both IDs—call setConversationContext.
         setConversationContext(conversationId, currentSessionUserId, otherUserId);
     }
-    // For getting the message type
-    let conversation_type = 'direct'; 
-    conversation_type = await fetchConversationType(conversationId);
+    
+    // Get the conversation type from the cache
+    const conversation_type = session_conversations[conversationId].conversation_type || 'direct';
 
-    if (messages.length === 0) {
+    if (!Array.isArray(messages) || messages.length === 0) {
         messageArea.innerHTML = '<p style="text-align: center; color: var(--text-dark);">No messages yet. Start chatting!</p>';
         return;
     }
-    // Loading the message
-    await Promise.all(messages.map(message => 
-        loadMessage(message, currentSessionUserId, currentConvoId, conversation_type)
-    ));
 
-    // Purge the saag na messages
+    // Clear the message area before loading new messages
+    messageArea.innerHTML = ''; 
+
+    for (const message of messages) {
+        await loadMessage(message, currentSessionUserId, currentConvoId, conversation_type);
+    }
+    
     const sus = document.querySelectorAll(`.message:not([data-convo-id="${currentConvoId}"])`);
     sus.forEach(msg => msg.remove());
 
@@ -673,7 +701,6 @@ chatSearch.addEventListener('keypress', async (event) => { // Mark event listene
                             await loadConversationMessages(conversationIdToLoad);
                         }
 
-
                         // Step 5: Close search and refresh convo list
                         searchResultsContainer.style.display = 'none';
                         chatSearch.value = '';
@@ -707,6 +734,6 @@ document.addEventListener('click', (event) => {
 /////////////////////////////////////////////////////////////////////////////
 
 
-// LOADING SHIYS ///////////////////////////////////////////////////
+// LOADING SHIYS: CACHING  ///////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////

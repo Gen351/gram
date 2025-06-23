@@ -23,26 +23,35 @@ export async function createProfile(userId, userEmail) {
 }
 
 export async function fetchConversationIds(userId) {
-  const { data: participations, error } = await supabase
-    .from('conversation_participant')
-    .select('conversation_id')
-    .eq('participant', userId);
+    const { data: participations, error } = await supabase
+        .from('conversation_participant')
+        .select('conversation_id')
+        .eq('participant', userId);
 
-  if (error) throw error;
+    if (error) throw error;
 
-  return participations.map(p => p.conversation_id);
+    return participations.map(p => p.conversation_id);
 }
 
 export async function fetchConversationData(conversationIds) {
-  const { data, error } = await supabase
-    .from('conversation')
-    .select('*')
-    .in('id', conversationIds)
-    .order('created_at', { ascending: false });
+    const { data, error } = await supabase
+        .from('conversation')
+        .select(`
+            id,
+            type,
+            conversation_name,
+            FK_group,
+            group:FK_group(group_name),
+            conversation_participant (participant)
+        `)
+        .in('id', conversationIds); // Fetch all in one query
 
-  if (error) throw error;
+    if (error) {
+        console.error('fetchConversationData error:', error.message);
+        return [];
+    }
 
-  return data;
+    return data;
 }
 
 export async function fetchRecentMessages(conversationID, count = 1) {
@@ -144,7 +153,7 @@ export async function fetchMessages(conversationId) {
 }
 
 
-export async function toggleLike(isLiked, msgId, receiverId, senderId) {
+export async function toggleLike(isLiked, msgId, receiverId) {
     const newState = isLiked ? 'empty' : 'liked';
 
     const { data: updated, error: updateError } = await supabase
@@ -159,7 +168,7 @@ export async function toggleLike(isLiked, msgId, receiverId, senderId) {
         return false;
     }
 
-    // 👇 Broadcast it to the other participant
+    // Broadcast it to the other participant
     await supabase.channel(`user-${receiverId}`)
         .send({
             type: 'broadcast',
@@ -174,7 +183,7 @@ export async function toggleLike(isLiked, msgId, receiverId, senderId) {
 }
 
 
-export async function setMessageToDeleted(msgId, receiverId, senderId) {
+export async function setMessageToDeleted(msgId, receiverId) {
     const { data: updated, error: updateError } = await supabase
         .from('message')
         .update({ deleted: true })
@@ -200,4 +209,3 @@ export async function setMessageToDeleted(msgId, receiverId, senderId) {
 
     return true;
 }
-

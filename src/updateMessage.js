@@ -121,24 +121,27 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
     let replyHTML = '';
     // 2. If a reply exists, fetch it and build the reply HTML.
     if (message.reply_to != null) {
-        const replied_message = await getMessage(message.reply_to);
-        if (replied_message) {
-            const repliedPreview = replied_message.contents.slice(0, 100); // trim preview
+        const replied_message_element = document.querySelector(`.message[data-msg-id="${message.reply_to}"]`);
+        const message_deleted = replied_message_element.classList.contains('deleted');
+        if (replied_message_element) {
+            const repliedPreview = replied_message_element.querySelector(`.message-content`).innerHTML.slice(0, 100); // trim preview
 
             // Populate the variable instead of adding directly to the element
             replyHTML = `
                 <div class="message-reply-preview">
                     <div class="reply-bar"></div>
                     <div class="reply-content">
-                        <div class="reply-text ${replied_message.deleted ? 'deleted' : ''}" data-msg-id="${replied_message.id}">${replied_message.deleted ? '-- message deleted --' : repliedPreview}</div>
+                        <div class="reply-text ${message_deleted ? 'deleted' : ''}" data-msg-id="${replied_message_element.dataset.msgId}">${message_deleted ? '-- message deleted --' : repliedPreview}</div>
                     </div>
                 </div>
             `;
         }
     }
 
+    messageArea.appendChild(messageElement);
+
     if(message.deleted) {
-        messageElement.innerHTML += `
+        messageElement.innerHTML = `
             <div class="message-bubble">
                 <div class="message-content">-- message deleted --</div>
                 <div class="message-timestamp">

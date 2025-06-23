@@ -1,5 +1,4 @@
 // src/main.js
-
 import { supabase } from './supabase/supabaseClient.js';
 import { setConversationContext } from './send.js';
 import { loadMessage, 
@@ -44,35 +43,24 @@ let currentSessionUserId = null;   // Store the auth.users.id
 let currentConvoId = null;
 
 // Message Listener /////////////////////////////////////////////////////////////
-const supaChannel = supabase.channel('messages-inserts');
+function initializeUserChannel(userId) {
+    const supaChannel = supabase.channel(`user-${userId}`);
 
-// On message
-supaChannel
-    .on('postgres_changes', { // for listening to messages
-        event: '*',
-        schema: 'public',
-        table: 'message',
-    }, (payload) => {
-        if(payload.eventType === 'INSERT') {
-            appendLatestMessage(payload.new, currentSessionUserId, currentConvoId);
-            setLatestMessage(payload.new, true);
-        } else if (payload.eventType === 'UPDATE') {
-            updateMessage(payload.new);
-            setLatestMessage(payload.new);
-        } else if (payload.eventType === 'DELETE') {
-            // No deletes yet
-        } else {
-            console.log(payload.eventType, "Don't know what to do...");
-        }
-    }) 
-    .on('postgres_changes', { // <-- for listening to conversation
-        event: '*',
-        schema: 'public',
-        table: 'conversation',
-    }, (payload) => {
-        console.log(payload.new);
-    })
-    .subscribe();
+    supaChannel
+        .on('broadcast', { event: 'new-message' }, ({ payload }) => {
+            if (payload.type === 'insert') {
+                appendLatestMessage(payload.message, userId, currentConvoId);
+                setLatestMessage(payload.message, true);
+            } else if (payload.type === 'update') {
+                // updateMessage(payload.message);
+                // setLatestMessage(payload.message);
+            } else {
+                console.log("Unknown broadcast type");
+            }
+        })
+        .subscribe();
+}
+
 
 // async function addAConvo
 
@@ -163,6 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.log("Active session found. User:", session.user.email);
                 currentSessionUserId = session.user.id; // Store the auth.users.id
+                initializeUserChannel(currentSessionUserId);
 
                 // Fetch user profile to display the initial and get profile_id
                 const profileData = await loadUserProfile(currentSessionUserId, session.user.email);

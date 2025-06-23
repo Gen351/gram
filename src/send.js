@@ -47,20 +47,17 @@ if (sendButton && messageInput) {
 }
 
 export async function send(currentSessionUserId, currentOtherUserId, currentConversationId) {
-    // 1) Ensure we have a valid conversation ID
     if (!currentConversationId) {
         alert('No conversation selected.');
         return;
     }
 
-    // 2) Read and trim the input
     const text = messageInput.value.trim();
+    if (!text) return;
     const replyTo = messageInput.dataset.replyTo;
     const convoId = messageInput.dataset.convoId;
-    if (!text) return;
 
     try {
-        // Build the message object conditionally
         const newMessage = {
             conversation_id: currentConversationId,
             from: currentSessionUserId,
@@ -69,18 +66,15 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
         };
 
         if (replyTo !== '') {
-            if(convoId !== '' && convoId == currentConversationId) {
+            if (convoId !== '' && convoId == currentConversationId) {
                 newMessage.reply_to = replyTo;
-                // change the messaging back to not replying...
             } else {
-                console.log("Cannot Reply, Wrong Conversation Id!")
+                console.log("Cannot Reply, Wrong Conversation Id!");
             }
-
-            hideReplyContent();
-            removeReply();
         }
 
-        const { data:newMessageInserted, error } = await supabase
+        // Insert to the database
+        const { data: newMessageInserted, error } = await supabase
             .from('message')
             .insert(newMessage)
             .select()
@@ -89,10 +83,35 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
         if (error) throw error;
 
         messageInput.value = '';
+        
+        // Broadcast to self, for instant UI update
+        await supabase.channel(`user-${currentSessionUserId}`).send({
+            type: 'broadcast',
+            event: 'new-message',
+            payload: {
+                type: 'insert',
+                message: newMessageInserted,
+                convoId: currentConversationId
+            }
+        });
+
+        // ✅ Broadcast to recipient's channel
+        await supabase.channel(`user-${currentOtherUserId}`).send({
+            type: 'broadcast',
+            event: 'new-message',
+            payload: {
+                type: 'insert',
+                message: newMessageInserted,
+                convoId: currentConversationId
+            }
+        });
 
     } catch (sendError) {
         console.error('Error sending message:', sendError.message);
         alert('Failed to send message. Please try again.');
     }
+
+    removeReply();
+    hideReplyContent();
     scrollDown();
 }

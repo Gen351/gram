@@ -13,7 +13,7 @@ export async function updateMessage(message, date = ""/* magamit siguro sunod */
     const messageElement = document.querySelector(`.message[data-msg-id="${message.id}"]`);
     if (!messageElement) return;
 
-    if(message.deleted === true) {
+    if(message.deleted) {
         const replyTexts = document.querySelectorAll(`.reply-text[data-msg-id="${message.id}"]`);
         if(replyTexts) {
             replyTexts.forEach(replyElement => {
@@ -129,14 +129,14 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
                 <div class="message-reply-preview">
                     <div class="reply-bar"></div>
                     <div class="reply-content">
-                        <div class="reply-text ${replied_message.deleted === true ? 'deleted' : ''}" data-msg-id="${replied_message.id}">${replied_message.deleted === true ? '-- message deleted --' : repliedPreview}</div>
+                        <div class="reply-text ${replied_message.deleted ? 'deleted' : ''}" data-msg-id="${replied_message.id}">${replied_message.deleted ? '-- message deleted --' : repliedPreview}</div>
                     </div>
                 </div>
             `;
         }
     }
 
-    if(message.deleted === true) {
+    if(message.deleted) {
         messageElement.innerHTML += `
             <div class="message-bubble">
                 <div class="message-content">-- message deleted --</div>
@@ -146,13 +146,13 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
         `;
         messageElement.querySelector('.message-content').classList.add('deleted');
     } else {
-        const highlightIfLiked = message.liked == 'liked' ? 'style="border:' + likedMessageStyle + ';"' : '';
+        const addLikedClass = message.liked == 'liked' ? 'liked' : '';
         
         messageElement.innerHTML += `
             <div class="message-bubble">
                 ${replyHTML}
                 <div class="message-sender" ${isSenderNameHidden}>${senderName}</div>
-                <div class="message-content" ${highlightIfLiked}>${message.deleted === true ? `message deleted` : message.contents}</div>
+                <div class="message-content ${addLikedClass}">${message.deleted ? `--message deleted--` : message.contents}</div>
                 <div class="message-timestamp">
                     ${date}
                     <pre><br></pre>
@@ -162,15 +162,24 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
             <div class="message-menu">
                 <button id="message-like-btn" data-msg-id="${message.id}" style="${message.liked == 'liked' ? 'color: red;' : ''}">${message.liked == 'liked' ? '<i class="fi fi-sr-heart"></i>' : '<i class="fi fi-br-heart"></i>'}</button>
                 <button id="message-reply-btn" data-msg-id="${message.id}"><i class="fi fi-sr-undo"></i></button>
-                ${isSentByCurrentUser ? `<button id="message-delete-btn" data-msg-id="${message.id}"><i class="fi fi-sr-trash"></i></button>` 
+                ${isSentByCurrentUser ? `<button id="message-delete-btn" data-msg-id="${message.id}"><i class="fi fi-sr-trash"></i> </button>` 
                 : ``}
             </div>
         `;
 
         const likeBtn = messageElement.querySelector('#message-like-btn');
         if (likeBtn) { 
-            likeBtn.addEventListener('click', () => {
-                toggleLike(message.id);
+            likeBtn.addEventListener('click', async () => {
+                const isLiked = messageElement.querySelector(`.message-content`).classList.contains(`liked`);
+                if(isLiked) unlikeMessage(message.id);
+                else likeMessage(message.id);
+                
+                // change in db, also listen if the changes have been applied, then revert back
+                const success = await toggleLike(isLiked, message.id, message.to, message.from);
+                if(!success) {
+                    if(isLiked) likeMessage(message.id);
+                    else unlikeMessage(message.id);
+                }
             });
         }
         const replyBtn = messageElement.querySelector('#message-reply-btn');
@@ -186,14 +195,11 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
             deleteBtn.addEventListener('click', () => {
                 const confirmDelete = window.confirm('Delete "' + message.contents + '" ?');
                 if (confirmDelete) {
-                    setMessageToDeleted(message.id);
-                    updateMessage(message, date);
+                    setMessageElementToDeleted(message.id, message.to, message.from);
                 }
             });
         }
     }
-
-
     messageArea.appendChild(messageElement);
 }
 
@@ -265,6 +271,55 @@ export async function setLatestMessage(message, isAllowed = false) {
         } else {
             latest.querySelector('.last-message').innerHTML = message.contents;
             latest.querySelector('.last-message').dataset.msgId = message.id;
+        }
+    }
+}
+
+
+export function likeMessage(msgId) {
+    const messageElement = document.querySelector(`.message[data-msg-id="${msgId}"]`);
+    if(messageElement) {
+        messageElement.querySelector('.message-content').classList.add('liked');
+        const likeBtn = messageElement.querySelector(`#message-like-btn`);
+        likeBtn.innerHTML = `<i class="fi fi-sr-heart"></i>`;
+        likeBtn.style.color = `red`;
+    }
+}
+export function unlikeMessage(msgId) {
+    const messageElement = document.querySelector(`.message[data-msg-id="${msgId}"]`);
+    if(messageElement) {
+        messageElement.querySelector('.message-content').classList.remove('liked');
+        const likeBtn = messageElement.querySelector(`#message-like-btn`);
+        likeBtn.innerHTML = `<i class="fi fi-br-heart"></i>`;
+        likeBtn.style.color = `white`;
+    }
+}
+
+export async function setMessageElementToDeleted(msgId, receiverId, senderId) {
+    const messageElement = document.querySelector(`.message[data-msg-id="${msgId}"]`);
+    if(messageElement) {
+        messageElement.querySelector('.message-content').classList.add('deleted');
+
+        // set it to deleted in DB, if it's deleted, set all messages to deleted
+        const success = await setMessageToDeleted(msgId, receiverId, senderId);
+        if(success) {
+            const replyTexts = document.querySelectorAll(`.reply-text[data-msg-id="${msgId}"]`);
+            if(replyTexts) {
+                replyTexts.forEach(replyElement => {
+                    replyElement.classList.add('deleted');
+                    replyElement.innerHTML = `-- message deleted --`;
+                });
+            }
+
+            messageElement.innerHTML = `
+                <div class="message-bubble">
+                    <div class="message-content deleted">-- message deleted --</div>
+                    <div class="message-timestamp">
+                    </div>
+                </div>
+            `;
+        } else {
+            messageElement.querySelector('.message-content').classList.remove('deleted');
         }
     }
 }

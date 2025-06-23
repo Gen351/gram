@@ -638,6 +638,10 @@ body {
     z-index: 3; /* Ensure content is on top of reply margin */
 }
 
+.message-content.liked {
+    border: 2px dashed red;
+}
+
 .message.outgoing .message-content.deleted, .message.incoming .message-content.deleted {
     font-style: italic;
     font-weight: 200;
@@ -649,7 +653,6 @@ body {
     font-weight: 200;
     font-size: smaller;
     color:#2b2b2b;
-    background-color: rgba(0, 0, 0, 0.2);
 }
 .last-message.deleted {
     font-style: italic;

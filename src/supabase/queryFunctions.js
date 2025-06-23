@@ -143,34 +143,61 @@ export async function fetchMessages(conversationId) {
     return messages;
 }
 
-export async function toggleLike(msgId) {
-    const { data, error: fetchError } = await supabase
+
+export async function toggleLike(isLiked, msgId, receiverId, senderId) {
+    const newState = isLiked ? 'empty' : 'liked';
+
+    const { data: updated, error: updateError } = await supabase
         .from('message')
-        .select('liked')
+        .update({ liked: newState })
         .eq('id', msgId)
+        .select()
         .single();
 
-    if (fetchError || !data) {
-        console.error('Failed to fetch liked state:', fetchError);
-        return;
-    }
-    const opp = (data.liked == 'liked') ? 'empty' : 'liked';
-
-    const { error: updateError } = await supabase
-        .from('message')
-        .update({ liked: opp })
-        .eq('id', msgId);
-
-    if (updateError) { 
+    if (updateError || !updated) { 
         console.error('Failed to update liked state:', updateError);
+        return false;
     }
+
+    // 👇 Broadcast it to the other participant
+    await supabase.channel(`user-${receiverId}`)
+        .send({
+            type: 'broadcast',
+            event: 'new-message',
+            payload: {
+                type: 'update',
+                message: updated,
+            }
+        });
+
+    return true;
 }
 
-export async function setMessageToDeleted(msgId) {
-    const { error: updateError } = await supabase
+
+export async function setMessageToDeleted(msgId, receiverId, senderId) {
+    const { data: updated, error: updateError } = await supabase
         .from('message')
         .update({ deleted: true })
-        .eq('id', msgId);
+        .eq('id', msgId)
+        .select()
+        .single();
 
-     if (updateError) { console.error('Failed to delete the message', updateError); }
+    if (updateError || !updated) { 
+        console.error('Failed to delete the message', updateError);
+        return false;
+    }
+
+    // 👇 Broadcast it to the other participant
+    await supabase.channel(`user-${receiverId}`)
+        .send({
+            type: 'broadcast',
+            event: 'new-message',
+            payload: {
+                type: 'update',
+                message: updated,
+            }
+        });
+
+    return true;
 }
+

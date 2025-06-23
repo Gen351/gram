@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx = canvas.getContext('2d');
         // Fullscreen canvas
 
-        if(window.innerWidth < 600 ) {
+        if(window.innerWidth < 820) {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         } else {

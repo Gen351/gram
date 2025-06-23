@@ -54,18 +54,14 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 95vh;
-    overflow: hidden; /* Prevent body scroll if content fits */
+    overflow: hidden;
 }
-
-
 
 #wallpaper-container {
     position: absolute;
-
     width: 100%;
     height: 100%;
     overflow: hidden;
-    
     pointer-events: none; /* clicks go through */
 }
 
@@ -74,13 +70,10 @@ body {
     top: 0;
     left: 0;
     z-index: 0;
-    
     width: 100%;
     height: auto;
-
     z-index: 0;
     opacity: 0.8;
-
     pointer-events: none; /* clicks go through */
 }
 
@@ -209,7 +202,6 @@ body {
 .left-panel .header .search-things {
     flex-grow: 1;
 }
-
 
 .search-results {
     display: none; /* Hidden by default */
@@ -351,11 +343,11 @@ body {
 
 /* --- Right Panel (Conversation Area) --- */
 .right-panel {
-    position: relative;
-
-    flex-grow: 1;
     display: flex;
     flex-direction: column;
+    position: relative;
+    height: 100%;
+    flex-grow: 1;
     background-color: var(--bg-primary); /* Main chat background */
 }
 
@@ -384,7 +376,6 @@ body {
     opacity: 1;
 }
 
-
 .chat-actions {
     display: flex;
     align-items: center;
@@ -398,11 +389,8 @@ body {
     justify-content: space-between;
     border-bottom: 1px solid var(--border-color);
     background-color: var(--bg-secondary);
-
     flex-shrink: 0;
-    
     max-height: 75px;
-
     z-index: 1;
 }
 
@@ -438,7 +426,7 @@ body {
 /* Message Area */
 .message-area {
     flex-grow: 1;
-    padding: 20px;
+    padding: 15px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -446,14 +434,6 @@ body {
 
     background-color: #ffffff05;
 }
-
-/* .message-area {
-    background-image: url('/assets/chat-bg.jpg');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-} */
-
 
 /* Custom Scrollbar for Webkit browsers */
 .message-area::-webkit-scrollbar {
@@ -472,31 +452,21 @@ body {
 #scroll-to-bottom-btn {
     position: sticky;
     display: block;
-
     height: 0px;
-
     background-color: transparent;
     color:#E4E6EB;
-
     left: 100%;
     bottom: 12vh;
-
     font-size: xx-large;
-
     border: none;
-
     cursor: pointer;
-
     z-index: 5;
-
     transition: 0.3s;
 }
 #scroll-to-bottom-btn:hover {
     transform: scale(1.2);
     transform: translateY(-5px);
 }
-
-/* --- MODIFIED & CLEANED MESSAGE STYLES --- */
 
 /* Base container for a whole message row (avatar, bubble, menu) */
 .message {
@@ -551,21 +521,18 @@ body {
     z-index: 1;
 }
 
-/* Vertical colored bar */
 .reply-bar {
     width: 3px;
-    align-self: stretch; /* Make the bar fill the height */
+    align-self: stretch;
     background-color: gray;
     border-radius: 3px;
 }
 
-/* Textual part of the reply */
 .reply-content {
     flex: 1;
     overflow: hidden;
 }
 
-/* Small sender name */
 .reply-sender {
     font-size: 0.8em;
     font-weight: bold;
@@ -581,40 +548,32 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-
 .reply-preview-area {
-    position: absolute;
-    bottom: 75px;
-    left: 0;
-    right: 0;
     margin: 0 10px;
-
     background-color: var(--bg-secondary, #222);
     color: var(--text-light, #eee);
     border-left: 4px solid red;
     border-radius: 8px;
     font-size: 0.9rem;
 
-    display: none; /* Hide initially */
-    max-height: 0;
+    display: none; /* Hidden by default */
     overflow: hidden;
-
+    
     align-items: center;
     gap: 10px;
     font-style: italic;
     z-index: 4;
     transition: max-height 0.3s ease, padding 0.3s ease;
+    flex-shrink: 0; /* Add this to prevent it from shrinking when visible */
 }
 .reply-preview-area.visible {
-    display: flex;
-    max-height: 80px;
+    display: flex; /* Makes it part of the flex flow now */
+    max-height: 80px; /* Adjust as needed, this is its full height */
     padding: 10px 14px;
     justify-content: space-between;
 }
 
 .reply-preview-content {
-    bottom: 75px;
     margin: 0 10px;
     overflow: hidden;
     font-style: italic;
@@ -849,47 +808,31 @@ body {
     .messenger-container {
         width: 100vw;
         height: 100vh;
-
-        max-height: 850px;
         border-radius: 0;
     }
-
-    .toggle-panel-container.open {
-        display: flex;
-    }
-
+    .toggle-panel-container.open {display: flex;}
     .left-panel {
         position: absolute;
-        top: 0;
-        left: 0;
-
-        flex: 0 0;
-        height: 95vh;
+        top: 0px;
+        left: 0px;
+        height: 100%;
         width: 100%;
-
-        max-height: 95vh;
+        max-height: 100%;
         max-width: 40vw;
-
         border-right: 2px solid var(--bg-primary);
-        background-color: var(--bg-secondary);
-
+        background-color: var(--bg-secondary); 
         transform: translateX(-100%);
         transition: transform 0.3s ease;
         z-index: 10;
     }
-    .left-panel.open {
-        transform: translateX(0);
-    }
-
+    .left-panel.open {transform: translateX(0);}
     .right-panel {
+        display: flex; /* Ensure this is here if not already inherited */
+        flex-direction: column; /* Ensure this is here if not already inherited */
         width: 100vw;
-        max-height: 90%;
-        min-height: 95vw;
+        height: 100%;
     }
-
-    .message-content, .message-reply-preview {
-        max-width: 100%; /* Allow messages to be wider */
-    }
+    .message-content, .message-reply-preview {max-width: 100%;}
 
     /* Other responsive styles remain the same */
     .left-panel .header { height: 60px; }
@@ -905,7 +848,6 @@ body {
     .conversation-header { padding: 10px; }
     .conversation-header .recipient-avatar { width: 36px; height: 36px; }
     .conversation-header .header-actions { gap: 5px; }
-    .message-area { height: 100%; }
     .message-input-area { padding: 8px 10px; }
     .message-input-area textarea { margin: 0 8px; padding: 8px 15px; }
     .message-input-area .icon-button { font-size: 1.3em; padding: 6px; margin: 0 3px; }

@@ -167,6 +167,7 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
             </div>
         `;
 
+        // the message menu 's event listeners
         const likeBtn = messageElement.querySelector('#message-like-btn');
         if (likeBtn) { 
             likeBtn.addEventListener('click', async () => {

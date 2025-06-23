@@ -131,6 +131,30 @@ document.addEventListener('DOMContentLoaded', () => {
     //////////////////////////////////////////////////////////
 
 
+    // RESPONSIVENESS TT~TT /////////////////////////////////////////////////
+    const openPanelButton = document.getElementById('open-left-panel');
+    const leftPanel = document.querySelector('.left-panel');
+    if (openPanelButton) {
+        openPanelButton.addEventListener('click', () => {
+            leftPanel.classList.add('open');
+        });
+    }
+    const closePanelButton = document.getElementById('close-left-panel');
+    if (closePanelButton) {
+        closePanelButton.addEventListener('click', () => {
+            leftPanel.classList.remove('open');
+        });
+    }
+
+    /////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
     // --- Initial UI setup (if elements exist) ---
     if (recipientNameElement) {
         recipientNameElement.textContent = 'Choose a conversation...';

@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // SETUP WALLPAPER ///////////////////////////////////////
     canvas = document.getElementById('message-area-bg');
     (async () => {
-        const parsed = await wallpaperParse('space');
+        const parsed = await wallpaperParse('late_night_delight');
         wallpaperImage = parsed.wallpaperImage;
         color_scheme = parsed.colors;
 

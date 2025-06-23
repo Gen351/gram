@@ -1,3 +1,6 @@
+// ALL the svg(s) are from:
+// https://github.com/crashmax-dev/twallpaper/tree/master/website/public/patterns
+
 export async function wallpaperParse(bgStyle) {
     let color_scheme = {
         a: "#777777",

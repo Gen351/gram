@@ -1,4 +1,3 @@
-import { supabase } from "./supabase/supabaseClient";
 import { fetchConversationType,
         toggleLike,
         setMessageToDeleted
@@ -236,21 +235,6 @@ export async function removeReply() {
     const preview = document.querySelector('.reply-preview-area');
     preview.classList.remove('visible');
     preview.querySelector('.reply-preview-content').innerHTML = "";
-}
-
-async function getMessage(msgId) {
-    try {
-        const { data:message, error } = await supabase
-            .from('message')
-            .select('*')
-            .eq('id', msgId)
-            .single();
-
-        return message;
-    } catch (error) {
-        console.error('Error fetching message: ', error);
-        return null;
-    }
 }
 
 export async function scrollAtBottom() {

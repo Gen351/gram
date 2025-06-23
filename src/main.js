@@ -39,8 +39,6 @@ let session_conversations = {};
     };
 */
 ////////////////////////////////////////////
-
-
 // Global variables for DOM elements and session data
 const profilePicContainer = document.getElementById('profilePicContainer');
 const profileInitialSpan = document.getElementById('profile-initial');
@@ -63,6 +61,10 @@ function initializeUserChannel(userId) {
             if (payload.type === 'insert') {
                 appendLatestMessage(payload.message, userId, currentConvoId);
                 setLatestMessage(payload.message, true);
+                if(session_conversations[currentConvoId]) {
+                    session_conversations[currentConvoId].messages.push(payload.message);
+                    console.log("Added to cache:", currentConvoId, payload.message);
+                }
             } else if (payload.type === 'update') {
                 // updateMessage(payload.message);
                 // setLatestMessage(payload.message);

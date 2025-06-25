@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // RESPONSIVENESS TT~TT /////////////////////////////////////////////////
-    document.querySelector('.messenger-container').style.height = window.innerHeight;
+    document.querySelector('.messenger-container').style.height = `${window.innerHeight}px`;
     console.log("Height set", window.innerHeight);
     
     const openPanelButton = document.getElementById('open-left-panel');

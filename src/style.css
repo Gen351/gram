@@ -807,7 +807,7 @@ body {
 @media (max-width: 820px) {
     .messenger-container {
         width: 100vw;
-        height: 100vh;
+        height: auto;
         border-radius: 0;
     }
     .toggle-panel-container.open {display: flex;}

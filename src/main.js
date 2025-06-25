@@ -55,8 +55,9 @@ function initializeUserChannel(userId) {
     supaChannel
         .on('broadcast', { event: 'new-message' }, ({ payload }) => {
             if (payload.type === 'insert') {
-                playNewMessageSound();
                 appendLatestMessage(payload.message, userId, currentConvoId);
+                if(payload.message.to === currentSessionUserId)
+                    playNewMessageSound();
                 setLatestMessage(payload.message, true);
                 addMessageToCache(currentConvoId, payload.message);
             } else if (payload.type === 'update') {

@@ -11,7 +11,7 @@ export async function wallpaperParse(bgStyle) {
     };
 
     try {
-        const res = await fetch(`/${bgStyle}.json`);
+        const res = await fetch(`/svg/${bgStyle}.json`);
         const data = await res.json();
         if (data?.color_scheme) {
             color_scheme = data.color_scheme;
@@ -21,7 +21,7 @@ export async function wallpaperParse(bgStyle) {
     }
 
     const wallpaperImage = new Image();
-    wallpaperImage.src = `/${bgStyle}.svg`;
+    wallpaperImage.src = `/svg/${bgStyle}.svg`;
 
     return { wallpaperImage, colors: color_scheme };
 }

@@ -71,7 +71,7 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
 
         if (replyTo !== '' && getReplyContext() !== null) {
             if (convoId !== '' && convoId == currentConversationId) {
-                newMessage.reply_to = replyTo;
+                newMessage.reply_to = getReplyContext();
             } else {
                 console.log("Cannot Reply, Wrong Conversation Id!");
             }

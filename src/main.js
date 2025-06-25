@@ -32,6 +32,8 @@ import { addMessageToCache,
         session_conversations 
         } from './utils/cache.js';
 
+import { playNewMessageSound } from './sounds.js';
+
 ////////////////////////////////////////////
 // Global variables for DOM elements and session data
 const profilePicContainer = document.getElementById('profilePicContainer');
@@ -53,6 +55,7 @@ function initializeUserChannel(userId) {
     supaChannel
         .on('broadcast', { event: 'new-message' }, ({ payload }) => {
             if (payload.type === 'insert') {
+                playNewMessageSound();
                 appendLatestMessage(payload.message, userId, currentConvoId);
                 setLatestMessage(payload.message, true);
                 addMessageToCache(currentConvoId, payload.message);
@@ -146,21 +149,47 @@ document.addEventListener('DOMContentLoaded', () => {
     if (openPanelButton) {
         openPanelButton.addEventListener('click', () => {
             leftPanel.classList.add('open');
+            leftPanel.focus();
         });
     }
     const closePanelButton = document.getElementById('close-left-panel');
     if (closePanelButton) {
         closePanelButton.addEventListener('click', () => {
             leftPanel.classList.remove('open');
-            closePanelButton
         });
+    }
+    document.querySelector('.right-panel').addEventListener('click', (event) => {
+        if(leftPanel.classList.contains('open') && !openPanelButton.contains(event.target)) {
+            leftPanel.classList.remove('open');
+        }
+    });
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+    document.addEventListener('touchstart', (e) => {
+        touchStartX = touchEndX = 0;
+        touchStartX = e.changedTouches[0].screenX;
+    });
+    document.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipeGesture();
+    });
+
+    function handleSwipeGesture() {
+        const swipeDistance = touchStartX - touchEndX;
+
+        if (swipeDistance > 50) { 
+            if(leftPanel.classList.contains('open')) leftPanel.classList.remove('open');
+        } else if (swipeDistance < -50) {
+            if(!leftPanel.classList.contains('open')) leftPanel.classList.add('open');
+        }
     }
     /////////////////////////////////////////////////////////////////////////
 
     
     // --- Initial UI setup (if elements exist) ---
     if (recipientNameElement) {
-        recipientNameElement.textContent = 'No Conversation Selected...';
+        recipientNameElement.textContent = 'Swipe Left for Conversations';
     }
 
     // --- Session Check & User Profile Initialization ---

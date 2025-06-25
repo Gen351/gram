@@ -204,7 +204,7 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
             replyBtn.addEventListener('click', () => {
                 showReplyContent();
                 setReplyContext(message.id, message.contents, message.conversation_id);
-                documen.getElementById("message-typed").focus();
+                document.getElementById("message-typed").focus();
             });
         }
         const deleteBtn = messageElement.querySelector('#message-delete-btn');
@@ -233,7 +233,7 @@ export async function hideReplyContent() {
 }
 
 async function setReplyContext(msgId, msgContents, convoId) { 
-    document.getElementyId('message-typed').dataset.replyTo = msgId;
+    document.getElementById('message-typed').dataset.replyTo = msgId;
     document.getElementById('message-typed').dataset.convoId = convoId;
 
     const preview = document.querySelector('.reply-preview-area');

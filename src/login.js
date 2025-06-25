@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 console.log('New profile created for user:', userId);
             } else {
-                console.log('Profile already exists for user:', userId);
+                // console.log('Profile already exists for user:', userId);
             }
         } catch (error) {
             console.error('Error in createProfileIfNotExists:', error.message);

@@ -25,9 +25,6 @@ export function setConversationContext(convoId, myUserId, otherUserId) {
     currentConversationId = convoId;
     currentSessionUserId = myUserId;
     currentOtherUserId = otherUserId;
-    console.log(currentConversationId);
-    console.log(currentSessionUserId);
-    console.log(currentOtherUserId);
 }
 
 // Grab DOM elements once:

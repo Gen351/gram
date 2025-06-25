@@ -16,7 +16,7 @@ export function getReplyContext() { return reply_to;}
 export function addMessageToCache(conversation_id, message) {
     if(session_conversations[conversation_id]) {
         session_conversations[conversation_id].messages.push(message);
-        console.log("Added to cache:", conversation_id, message);
+        console.log("Added to cache:", message.contents);
     }
 }
 

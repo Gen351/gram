@@ -76,23 +76,24 @@ function initializeUserChannel(userId) {
 
 /////////////////////////////////////////////////////////////////////////////////
 document.addEventListener('DOMContentLoaded', () => {
+    
     // SETUP WALLPAPER ///////////////////////////////////////
     canvas = document.getElementById('message-area-bg');
     (async () => {
         const parsed = await wallpaperParse('late_night_delight');
         wallpaperImage = parsed.wallpaperImage;
         color_scheme = parsed.colors;
-
+        
         wallpaperImage.onload = () => {
             drawStaticBackground(color_scheme);
         };
         wallpaperImage.onerror = () => {
             console.error("Failed to load the wallpaper image.");
         };
-
+        
         // Manually trigger in case the image was cached
         if (wallpaperImage.complete) drawStaticBackground(color_scheme);
-
+        
         window.addEventListener('resize', () => drawStaticBackground(color_scheme));
     })();
     
@@ -102,9 +103,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if(window.innerWidth < 820) {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            document.querySelector('.recipient-name').innerHTML = `Swipe Left for Conversations`;
         } else {
             canvas.width = 2140 / 1.75;
             canvas.height = 3840 / 1.75;
+            document.querySelector('.recipient-name').innerHTML = `Choose a Conversation`;
         }
 
         // --- 1. Gradient Background ---
@@ -211,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (profileData && profileData.id) {
                     currentSessionProfileId = profileData.id; // Assign the profile ID correctly
-                    console.log("User's profile ID:", currentSessionProfileId);
+                    // console.log("User's profile ID:", currentSessionProfileId);
 
                     // Now that we have the user's auth ID, load conversations
                     await loadConversations(currentSessionUserId); // Pass the auth.users.id
@@ -430,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newChatButton = document.getElementById('new-chat-button');
     if (newChatButton) {
         newChatButton.addEventListener('click', () => {
-            console.log('New chat button clicked on dashboard.');
+            // console.log('New chat button clicked on dashboard.');
             // Implement new chat UI/logic here, perhaps showing a modal to select users
         });
     }
@@ -492,7 +495,7 @@ async function loadConversationMessages(conversationId) {
                 conversation_type: convoType,
                 style: {}
             };
-            console.log("Cached", conversationId, session_conversations[conversationId]);
+            // console.log("Cached", conversationId, session_conversations[conversationId]);
         }
         
         // 3. Use the data you just fetched for the current view.

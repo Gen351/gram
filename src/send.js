@@ -5,6 +5,10 @@ import { scrollDown,
         removeReply
         } from './updateMessage.js';
 
+import { getReplyContext,
+        removeReplyToContextFromCache
+        } from './utils/cache.js';
+
 // These will be set by main.js whenever a conversation is opened:
 let currentConversationId = null;
 let currentSessionUserId = null;
@@ -65,7 +69,7 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
             contents: text
         };
 
-        if (replyTo !== '') {
+        if (replyTo !== '' || getReplyContext() === null) {
             if (convoId !== '' && convoId == currentConversationId) {
                 newMessage.reply_to = replyTo;
             } else {
@@ -111,6 +115,7 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
         alert('Failed to send message. Please try again.');
     }
 
+    removeReplyToContextFromCache();
     removeReply();
     hideReplyContent();
     scrollDown();

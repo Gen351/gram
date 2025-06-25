@@ -28,16 +28,10 @@ let canvas;
 let wallpaperImage;
 let color_scheme;
 
-let session_conversations = {};
-/* FORMAT
-    session_conversations[conversationId] = {
-        convo_name: convoName,
-        convo_participants: fetchedParticipants,
-        messages: fetchedMessages,
-        conversation_type: convoType,
-        style: {}
-    };
-*/
+import { addMessageToCache, 
+        session_conversations 
+        } from './utils/cache.js';
+
 ////////////////////////////////////////////
 // Global variables for DOM elements and session data
 const profilePicContainer = document.getElementById('profilePicContainer');
@@ -61,10 +55,7 @@ function initializeUserChannel(userId) {
             if (payload.type === 'insert') {
                 appendLatestMessage(payload.message, userId, currentConvoId);
                 setLatestMessage(payload.message, true);
-                if(session_conversations[currentConvoId]) {
-                    session_conversations[currentConvoId].messages.push(payload.message);
-                    console.log("Added to cache:", currentConvoId, payload.message);
-                }
+                addMessageToCache(currentConvoId, payload.message);
             } else if (payload.type === 'update') {
                 // updateMessage(payload.message);
                 // setLatestMessage(payload.message);

@@ -3,6 +3,13 @@ import { fetchConversationType,
         setMessageToDeleted
         } from './supabase/queryFunctions.js';
 
+import { cacheLikedMessage,
+        cacheUnlikedMessage,
+        cacheDeletedMessage,
+        cacheUndeletedMessage,
+        setReplyToContextFromCache,
+        removeReplyToContextFromCache
+        } from './utils/cache.js';
 
 const messageArea = document.querySelector('.message-area');
 
@@ -169,20 +176,26 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
                 : ``}
             </div>
         `;
-
         // the message menu 's event listeners
         const likeBtn = messageElement.querySelector('#message-like-btn');
         if (likeBtn) { 
             likeBtn.addEventListener('click', async () => {
                 const isLiked = messageElement.querySelector(`.message-content`).classList.contains(`liked`);
-                if(isLiked) unlikeMessage(message.id);
-                else likeMessage(message.id);
-                
+                if(isLiked) {
+                    cacheUnlikedMessage(message.conversation_id, message.id);
+                    unlikeMessage(message.id);
+                } else {
+                    cacheLikedMessage(message.conversation_id, message.id);
+                    likeMessage(message.id);
+                }
                 // change in db, also listen if the changes have been applied, then revert back
                 const success = await toggleLike(isLiked, message.id, message.to, message.from);
-                if(!success) {
-                    if(isLiked) likeMessage(message.id);
-                    else unlikeMessage(message.id);
+                if(!success && isLiked) {
+                    cacheLikedMessage(message.conversation_id, message.id);
+                    likeMessage(message.id);
+                } else if(!success && !isLiked) {
+                    cacheUnlikedMessage(message.conversation_id, message.id);
+                    unlikeMessage(message.id);
                 }
             });
         }
@@ -190,7 +203,7 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
         if(replyBtn) {
             replyBtn.addEventListener('click', () => {
                 showReplyContent();
-                setReplyToId(message.id, message.contents, message.conversation_id);
+                setReplyContext(message.id, message.contents, message.conversation_id);
                 document.getElementById("message-typed").focus();
             });
         }
@@ -198,8 +211,8 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
         if(deleteBtn) {
             deleteBtn.addEventListener('click', () => {
                 const confirmDelete = window.confirm('Delete "' + message.contents + '" ?');
-                if (confirmDelete) {
-                    setMessageElementToDeleted(message.id, message.to, message.from);
+                if (confirmDelete && setMessageElementToDeleted(message.id, message.to, message.from)) {
+                    cacheDeletedMessage(message.conversation_id, message.id);
                 }
             });
         }
@@ -219,7 +232,7 @@ export async function hideReplyContent() {
     replyBtnIcons.forEach(rplyBtn => {rplyBtn.style.display = 'flex';});
 }
 
-async function setReplyToId(msgId, msgContents, convoId) { 
+async function setReplyContext(msgId, msgContents, convoId) { 
     document.getElementById('message-typed').dataset.replyTo = msgId;
     document.getElementById('message-typed').dataset.convoId = convoId;
 
@@ -227,14 +240,17 @@ async function setReplyToId(msgId, msgContents, convoId) {
     preview.classList.add('visible');
     preview.querySelector('.reply-preview-content').innerHTML = msgContents;
     
+    setReplyToContextFromCache(msgId);
 }
 export async function removeReply() {
     document.getElementById('message-typed').dataset.replyTo = "";
     document.getElementById('message-typed').dataset.convoId = "";
-
+    
     const preview = document.querySelector('.reply-preview-area');
     preview.classList.remove('visible');
     preview.querySelector('.reply-preview-content').innerHTML = "";
+    
+    removeReplyToContextFromCache();
 }
 
 export async function scrollAtBottom() {
@@ -307,8 +323,12 @@ export async function setMessageElementToDeleted(msgId, receiverId, senderId) {
                     </div>
                 </div>
             `;
+
+            return true;
         } else {
             messageElement.querySelector('.message-content').classList.remove('deleted');
+            return false;
         }
     }
+    return false;
 }

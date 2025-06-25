@@ -69,7 +69,7 @@ export async function send(currentSessionUserId, currentOtherUserId, currentConv
             contents: text
         };
 
-        if (replyTo !== '' || getReplyContext() === null) {
+        if (replyTo !== '' && getReplyContext() !== null) {
             if (convoId !== '' && convoId == currentConversationId) {
                 newMessage.reply_to = replyTo;
             } else {

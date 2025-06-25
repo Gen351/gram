@@ -98,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function drawStaticBackground(color_scheme) {
         const ctx = canvas.getContext('2d');
         // Fullscreen canvas
-
         if(window.innerWidth < 820) {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -106,8 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
             canvas.width = 2140 / 1.75;
             canvas.height = 3840 / 1.75;
         }
-        console.log("Bg h: " + canvas.width);
-        console.log("Bg w: " + canvas.height);
 
         // --- 1. Gradient Background ---
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -145,6 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // RESPONSIVENESS TT~TT /////////////////////////////////////////////////
+    document.querySelector('.messenger-container').style.height = window.innerHeight;
+    console.log("Height set", window.innerHeight);
+    
     const openPanelButton = document.getElementById('open-left-panel');
     const leftPanel = document.querySelector('.left-panel');
     if (openPanelButton) {

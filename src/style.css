@@ -522,6 +522,13 @@ body {
     z-index: 1;
 }
 
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+
 .reply-bar {
     width: 3px;
     align-self: stretch;

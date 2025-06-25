@@ -1,12 +1,10 @@
-import { fetchConversationType,
-        toggleLike,
+import {toggleLike,
         setMessageToDeleted
         } from './supabase/queryFunctions.js';
 
 import { cacheLikedMessage,
         cacheUnlikedMessage,
         cacheDeletedMessage,
-        cacheUndeletedMessage,
         setReplyToContextFromCache,
         removeReplyToContextFromCache
         } from './utils/cache.js';
@@ -184,27 +182,27 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
         `;
         // the message menu 's event listeners
         const likeBtn = messageElement.querySelector('#message-like-btn');
-        if (likeBtn) { 
-            likeBtn.addEventListener('click', async () => {
-                const isLiked = messageElement.querySelector(`.message-content`).classList.contains(`liked`);
-                if(isLiked) {
-                    cacheUnlikedMessage(message.conversation_id, message.id);
-                    unlikeMessage(message.id);
-                } else {
-                    cacheLikedMessage(message.conversation_id, message.id);
-                    likeMessage(message.id);
-                }
-                // change in db, also listen if the changes have been applied, then revert back
-                const success = await toggleLike(isLiked, message.id, message.to, message.from);
-                if(!success && isLiked) {
-                    cacheLikedMessage(message.conversation_id, message.id);
-                    likeMessage(message.id);
-                } else if(!success && !isLiked) {
-                    cacheUnlikedMessage(message.conversation_id, message.id);
-                    unlikeMessage(message.id);
-                }
-            });
-        }
+        if (!likeBtn) return;
+
+        likeBtn.addEventListener('click', async () => {
+            const msgContent = messageElement.querySelector('.message-content');
+            const isLiked = msgContent.classList.contains('liked');
+
+            const toggle = isLiked ? ['empty', unlikeMessage] : ['liked', likeMessage];
+            const cache = isLiked ? cacheUnlikedMessage : cacheLikedMessage;
+
+            cache(message.conversation_id, message.id);
+            toggle[1](message.id);
+
+            const success = await toggleLike(isLiked, message.id, message.to, message.from);
+
+            if (!success) {
+                const revertCache = isLiked ? cacheLikedMessage : cacheUnlikedMessage;
+                const revertToggle = isLiked ? likeMessage : unlikeMessage;
+                revertCache(message.conversation_id, message.id);
+                revertToggle(message.id);
+            }
+        });
         const replyBtn = messageElement.querySelector('#message-reply-btn');
         if(replyBtn) {
             replyBtn.addEventListener('click', () => {

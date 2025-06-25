@@ -7,7 +7,8 @@ import { loadMessage,
         scrollDown,
         removeReply,
         hideReplyContent,
-        setLatestMessage
+        setLatestMessage,
+        updateMessage
         } from './updateMessage.js';
 
 import { fetchProfile, 
@@ -56,13 +57,13 @@ function initializeUserChannel(userId) {
         .on('broadcast', { event: 'new-message' }, ({ payload }) => {
             if (payload.type === 'insert') {
                 appendLatestMessage(payload.message, userId, currentConvoId);
-                if(payload.message.to === currentSessionUserId)
-                    playNewMessageSound();
                 setLatestMessage(payload.message, true);
                 addMessageToCache(currentConvoId, payload.message);
+                if(payload.message.to == currentSessionUserId) {
+                    playNewMessageSound();
+                }
             } else if (payload.type === 'update') {
-                // updateMessage(payload.message);
-                // setLatestMessage(payload.message);
+                updateMessage(payload.message);
             } else {
                 console.log("Unknown broadcast type");
             }
@@ -186,12 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     /////////////////////////////////////////////////////////////////////////
-
-    
     // --- Initial UI setup (if elements exist) ---
-    if (recipientNameElement) {
-        recipientNameElement.textContent = 'Swipe Left for Conversations';
-    }
 
     // --- Session Check & User Profile Initialization ---
     supabase.auth.getSession()

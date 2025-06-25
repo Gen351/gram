@@ -59,14 +59,20 @@ export async function updateMessage(message, date = ""/* magamit siguro sunod */
 
 
 export async function appendLatestMessage(message, currentSessionUserId, currentConvoId) {
-    if(!messageArea) { return; }
-
-    if(!currentConvoId || message.conversation_id != currentConvoId) { return; }
-
+    if(!messageArea) return;
+    if(!currentConvoId || message.conversation_id != currentConvoId) return;
     if(message.from == currentSessionUserId || message.to == currentSessionUserId) {
-        fetchConversationType(message.conversation_id);
+        // fetchConversationType(message.conversation_id);
         await loadMessage(message, currentSessionUserId, message.conversation_id);
-        scrollDown();
+        
+        const messageElement = document.querySelector(`.message[data-msg-id="${message.id}"]`);
+        if (messageElement) {
+            messageElement.classList.add('new');
+            scrollDown();
+            setTimeout(() => {
+                messageElement.classList.remove('new');
+            }, 3000);
+        }
     }
 }
 

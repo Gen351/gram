@@ -408,8 +408,12 @@ body {
 }
 
 .conversation-header .recipient-name {
+    content: "Choose a Conversation";
     font-weight: 600;
     color: var(--text-light);
+}
+.conversation-header .recipient-name::before {
+    content: "Choose a Conversation";
 }
 
 .conversation-header .status {
@@ -655,6 +659,25 @@ body {
     flex-direction: row; /* Avatar on the left */
 }
 
+@keyframes blink {
+    0%   {
+        box-shadow:
+            0 0 60px rgba(255, 255, 255, 1),
+            0 0 10px rgba(136, 136, 136, 0.7),
+            0 0 20px rgba(35, 35, 35, 0.5);
+    }
+    100% {
+        box-shadow: none;
+    }
+}
+
+.message.incoming.new .message-content {
+    animation: blink 2.3s ease-out;
+}
+.chat-item.new {
+    animation: blink 2.3s ease-out;
+}
+
 .message.incoming .message-avatar {
     margin-right: 8px;
 }
@@ -847,6 +870,7 @@ body {
     .chat-item .chat-avatar { width: 45px; height: 45px; margin-right: 10px; }
     .conversation-header { padding: 10px; }
     .conversation-header .recipient-avatar { width: 36px; height: 36px; }
+    .conversation-header .recipient-name::before { content: "Swipe Left for Conversations"}
     .conversation-header .header-actions { gap: 5px; }
     .message-input-area { padding: 8px 10px; }
     .message-input-area textarea { margin: 0 8px; padding: 8px 15px; }

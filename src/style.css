@@ -92,6 +92,149 @@ body {
     pointer-events: none; /* clicks go through */
 }
 
+
+/* --- Username Change Dialog --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent dark overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's above other content */
+
+    /* Animation properties for fade-in/out */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s; /* Fade, then hide visibility */
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease-in-out, visibility 0s linear 0s; /* Fade in, visibility immediate */
+}
+
+.username-dialog {
+    background-color: var(--bg-secondary); /* Match chat list background */
+    padding: 30px;
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    max-width: 450px; /* Max width for dialog content */
+    width: 90%; /* Responsive width */
+    text-align: center;
+    color: var(--text-light);
+
+    /* Animation for dialog pop-in */
+    transform: scale(0.9);
+    transition: transform 0.3s ease-in-out;
+}
+
+.modal-overlay.active .username-dialog {
+    transform: scale(1);
+}
+
+.username-dialog h2 {
+    color: var(--text-light);
+    margin-bottom: 25px;
+    font-size: 1.8em;
+    font-weight: 700;
+}
+
+.username-dialog .input-group {
+    margin-bottom: 20px;
+    text-align: left; /* Align label and input */
+}
+
+.username-dialog label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9em;
+    color: var(--text-dark); /* Dimmer label text */
+}
+
+.username-dialog input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--bg-tertiary);
+    color: var(--text-light);
+    font-size: 1em;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.username-dialog input[type="text"]:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(0, 133, 255, 0.3); /* Subtle glow */
+}
+
+.username-dialog .error-message {
+    color: #ff4d4d; /* Red for errors */
+    font-size: 0.8em;
+    margin-top: 5px;
+    display: none; /* Hidden by default */
+    text-align: left;
+}
+
+.username-dialog .dialog-actions {
+    display: flex;
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 15px; /* Space between buttons */
+    margin-top: 30px;
+}
+
+.username-dialog .dialog-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.username-dialog .dialog-actions .primary-btn {
+    background-color: var(--accent-primary);
+    color: white;
+}
+
+.username-dialog .dialog-actions .primary-btn:hover {
+    background-color: var(--accent-primary-hover);
+    transform: translateY(-1px);
+}
+
+.username-dialog .dialog-actions .secondary-btn {
+    background-color: var(--bg-tertiary);
+    color: var(--text-dark);
+}
+
+.username-dialog .dialog-actions .secondary-btn:hover {
+    background-color: var(--border-color);
+    color: var(--text-light);
+    transform: translateY(-1px);
+}
+
+.username-dialog .status-message {
+    margin-top: 20px;
+    font-size: 0.9em;
+    color: var(--text-dark); /* Default status message color */
+}
+
+.username-dialog .status-message.success {
+    color: #4CAF50; /* Green for success */
+}
+
+.username-dialog .status-message.error {
+    color: #ff4d4d; /* Red for errors */
+}
+
+
+
+
 .messenger-container {
     display: flex;
     width: 95vw;
@@ -830,8 +973,205 @@ img {
     display: none; /* Chrome, Safari */
 }
 
+
+/* --- Theme Change Dialog (shares modal-overlay with username dialog) --- */
+.theme-dialog {
+    background-color: var(--bg-secondary); /* Match chat list background */
+    padding: 30px;
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    max-width: 800px; /* Wider for theme selection */
+    width: 90%; /* Responsive width */
+    text-align: center;
+    color: var(--text-light);
+
+    /* Animation for dialog pop-in (managed by .modal-overlay.active) */
+    transform: scale(0.9);
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Ensure the pop-in animation works for this dialog too */
+.modal-overlay.active .theme-dialog {
+    transform: scale(1);
+}
+
+.theme-dialog h2 {
+    color: var(--text-light);
+    margin-bottom: 25px;
+    font-size: 1.8em;
+    font-weight: 700;
+}
+
+.themes {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Space between theme cards */
+    margin-bottom: 25px;
+    max-height: 400px; /* Limit height to enable scrolling for many themes */
+    overflow-y: auto; /* Enable scrolling for themes list */
+    padding: 10px; /* Padding for scrollable area */
+
+    /* Custom Scrollbar for Webkit browsers */
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+    &::-webkit-scrollbar-track {
+        background: var(--scrollbar-track);
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: var(--scrollbar-thumb);
+        border-radius: 10px;
+        border: 2px solid var(--scrollbar-track);
+    }
+}
+
+.theme-card {
+    background-color: var(--bg-tertiary);
+    border-radius: var(--border-radius-sm);
+    padding: 10px;
+    cursor: pointer;
+    border: 2px solid transparent; /* Default transparent border */
+    transition: border-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px; /* Fixed height for cards */
+    font-size: 0.9em;
+    color: var(--text-dark); /* Dimmer text initially */
+    text-transform: capitalize; /* Capitalize theme names */
+    overflow: hidden; /* Ensure content stays within */
+    position: relative; /* For background image */
+}
+
+.theme-card::before { /* For the background image/pattern preview */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover; /* Cover the card area */
+    background-position: center;
+    opacity: 0.8; /* Subtle background pattern */
+    z-index: 1; /* Behind text */
+}
+
+/* Specific background images for theme cards */
+/* You'll need to map these to your actual SVG patterns */
+#space::before { background-image: url('/svg/space.svg'); }
+#underwater_world::before { background-image: url('/svg/underwater_world.svg'); }
+#star_wars::before { background-image: url('/svg/star_wars.svg'); }
+#math::before { background-image: url('/svg/math.svg'); }
+#late_night_delight::before { background-image: url('/svg/late_night_delight.svg'); }
+#games::before { background-image: url('/svg/games.svg'); }
+#fantasy::before { background-image: url('/svg/fantasy.svg'); }
+#beach::before { background-image: url('/svg/beach.svg'); }
+#astronaut_cats::before { background-image: url('/svg/astronaut_cats.svg'); }
+
+
+.theme-card span { /* For the theme name text */
+    position: relative;
+    z-index: 2; /* Above the background */
+    font-weight: 600;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5); /* Make text more readable on patterns */
+}
+
+
+.theme-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border-color: var(--border-color); /* Highlight border on hover */
+}
+
+.theme-card.selected {
+    border-color: var(--accent-primary); /* Vibrant border for selected theme */
+    box-shadow: 0 0 0 3px var(--accent-primary); /* Stronger highlight */
+    transform: scale(1.02); /* Slightly larger when selected */
+    color: var(--text-light); /* Make text brighter when selected */
+}
+
+/* Dialog Actions (buttons) */
+.theme-dialog .dialog-actions {
+    display: flex;
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 15px; /* Space between buttons */
+    margin-top: 30px;
+}
+
+.theme-dialog .dialog-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* Using primary-btn and secondary-btn for consistency */
+.theme-dialog .dialog-actions .primary-btn {
+    background-color: var(--accent-primary);
+    color: white;
+}
+
+.theme-dialog .dialog-actions .primary-btn:hover {
+    background-color: var(--accent-primary-hover);
+    transform: translateY(-1px);
+}
+
+/* For cancel button, we can use secondary-btn class */
+.theme-dialog .dialog-actions .secondary-btn {
+    background-color: var(--bg-tertiary);
+    color: var(--text-dark);
+}
+
+.theme-dialog .dialog-actions .secondary-btn:hover {
+    background-color: var(--border-color);
+    color: var(--text-light);
+    transform: translateY(-1px);
+}
+
+.theme-dialog .status-message {
+    margin-top: 20px;
+    font-size: 0.9em;
+    color: var(--text-dark); /* Default status message color */
+}
+
+.theme-dialog .status-message.success {
+    color: #4CAF50; /* Green for success */
+}
+
+.theme-dialog .status-message.error {
+    color: #ff4d4d; /* Red for errors */
+}
+
 /* --- Responsive Adjustments --- */
 @media (max-width: 820px) {
+    /* Responsive adjustments for theme dialog */
+    .theme-dialog {
+        padding: 20px;
+        max-width: 95%; /* More responsive width */
+    }
+    .theme-dialog h2 {
+        font-size: 1.6em;
+    }
+    .themes {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Smaller cards on smaller screens */
+        gap: 10px;
+        max-height: 300px;
+    }
+    .theme-card {
+        min-height: 100px;
+    }
+    .theme-dialog .dialog-actions {
+        flex-direction: column-reverse; /* Stack buttons vertically */
+        gap: 10px;
+    }
+    .theme-dialog .dialog-actions button {
+        width: 100%;
+    }
+
+    
     .messenger-container {
         width: 100vw;
         height: auto;
@@ -890,4 +1230,23 @@ img {
     .icon-button { padding: 8px; font-size: 1.1em; }
     .message-area { padding: 10px; }
     .message-input-area .icon-button { font-size: 1.2em; padding: 4px; }
+
+    .username-dialog {
+        padding: 20px;
+        border-radius: var(--border-radius-sm);
+    }
+
+    .username-dialog h2 {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+    }
+
+    .username-dialog .dialog-actions {
+        flex-direction: column-reverse; /* Stack buttons vertically on small screens */
+        gap: 10px;
+    }
+
+    .username-dialog .dialog-actions button {
+        width: 100%; /* Full width buttons */
+    }
 }

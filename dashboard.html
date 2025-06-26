@@ -33,6 +33,8 @@
                     </div>
                     <div id="profile-dropdown" class="dropdown-menu">
                         <button id="logout-button">Logout</button>
+                        <button id="change-username-button">Change Name</button>
+                        <button if="change-profile-pic-button">Change Profile Picture</button>
                     </div>
                 </div>
                 <div class="search-things">
@@ -51,8 +53,7 @@
                 </div>
             </div>
             <div class="chats-list">
-                <!-- Insert conversations here -->
-            </div>
+                </div>
         </div>
 
         <div class="right-panel">
@@ -78,20 +79,17 @@
                 </div>
             </div>
             
-            <!-- For the bg -->
             <div id="wallpaper-container">
                 <canvas id="message-area-bg"></canvas>
                 <div class="pattern-overlay"></div>
             </div>
 
             <div class="message-area">
-                <!-- the messages here -->
-            </div>
+                </div>
 
             <div class="reply-preview-area">
                 <div class="reply-preview-content">
-                    <!-- the replye preview here -->
-                </div>
+                    </div>
                 <button id="btn-cancel-reply">
                     <i class="fi fi-br-comment-xmark"></i>
                 </button>
@@ -117,6 +115,47 @@
                     <i class="fi fi-br-heart"></i>
                 </button>
             </div>
+        </div>
+    </div>
+
+
+    <div id="changeTheme" class="modal-overlay">
+        <div class="theme-dialog">
+            <h2>Change Theme</h2>
+            <div class="themes">
+                <!-- ... inside <div class="themes"> ... -->
+                <div id="space" class="theme-card"><span>Space</span></div>
+                <div id="underwater-world" class="theme-card"><span>Underwater World</span></div>
+                <div id="star-wars" class="theme-card"><span>Star Wars</span></div>
+                <div id="math" class="theme-card"><span>Math</span></div>
+                <div id="late-night-delight" class="theme-card"><span>Late Night Delight</span></div>
+                <div id="games" class="theme-card"><span>Games</span></div>
+                <div id="fantasy" class="theme-card"><span>Fantasy</span></div>
+                <div id="beach" class="theme-card"><span>Beach</span></div>
+                <div id="astronaut-cats" class="theme-card"><span>Astronaut Cats</span></div>
+                <!-- ... -->
+            </div>
+            <div class="dialog-actions">
+                <button id="saveThemeChange" class="primary-btn">Save</button>
+                <button id="cancelThemeChange" class="primary-btn">Cancel</button>
+            </div>
+            <p id="changeThemeStatusMessage" class="status-message"></p>
+        </div>
+    </div>
+
+    <div id="changeUsernameDialog" class="modal-overlay">
+        <div class="username-dialog">
+            <h2>Change Username</h2>
+            <div class="input-group">
+                <label for="newUsernameInput">New Username:</label>
+                <input type="text" id="newUsernameInput" placeholder="Enter new username" maxlength="20">
+                <small id="usernameError" class="error-message"></small>
+            </div>
+            <div class="dialog-actions">
+                <button id="saveUsernameChange" class="primary-btn">Save</button>
+                <button id="cancelUsernameChange" class="secondary-btn">Cancel</button>
+            </div>
+            <p id="usernameStatusMessage" class="status-message"></p>
         </div>
     </div>
 

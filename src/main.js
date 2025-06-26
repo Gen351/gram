@@ -1,6 +1,6 @@
 // src/main.js
 import { supabase } from './supabase/supabaseClient.js';
-import { setConversationContext } from './send.js';
+import { setConversationContext } from './utils/send.js';
 import { loadMessage, 
         appendLatestMessage,
         scrollAtBottom,
@@ -22,18 +22,23 @@ import { fetchProfile,
         fetchMessages
         } from './supabase/queryFunctions.js';
 
-import { wallpaperParse } from './wallpaperParser.js'; 
+import { wallpaperParse,
+        openChangeThemeDialog
+        } from './wallpaperParser.js'; 
+
+import { addMessageToCache, 
+        session_conversations 
+        } from './utils/cache.js';
+
+import { changeUsernaameDialog } from './utils/profile.js';
+
+import { playNewMessageSound } from './utils/sounds.js';
 
 // FOR THE WALLPAPER ///////////////////////
 let canvas;
 let wallpaperImage;
 let color_scheme;
 
-import { addMessageToCache, 
-        session_conversations 
-        } from './utils/cache.js';
-
-import { playNewMessageSound } from './sounds.js';
 
 ////////////////////////////////////////////
 // Global variables for DOM elements and session data
@@ -41,13 +46,16 @@ const profilePicContainer = document.getElementById('profilePicContainer');
 const profileInitialSpan = document.getElementById('profile-initial');
 const profileDropdown = document.getElementById('profile-dropdown');
 const logoutButton = document.getElementById('logout-button');
+const changeUsernameButton = document.getElementById('change-username-button');
 const convoList = document.querySelector('.chats-list');
 const recipientNameElement = document.querySelector('.recipient-name'); // Renamed for clarity
 const messageArea = document.querySelector('.message-area');
 
 let currentSessionProfileId = null; // Renamed to avoid confusion and initialized to null
 let currentSessionUserId = null;   // Store the auth.users.id
-let currentConvoId = null;
+export let currentConvoId = null;
+export function getCurrentConversationId() { return currentConvoId; }
+
 
 // Message Listener /////////////////////////////////////////////////////////////
 function initializeUserChannel(userId) {
@@ -73,7 +81,6 @@ function initializeUserChannel(userId) {
 
 
 // async function addAConvo
-
 /////////////////////////////////////////////////////////////////////////////////
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -103,11 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if(window.innerWidth < 820) {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            document.querySelector('.recipient-name').innerHTML = `Swipe Left for Conversations`;
         } else {
             canvas.width = 2140 / 1.75;
             canvas.height = 3840 / 1.75;
-            document.querySelector('.recipient-name').innerHTML = `Choose a Conversation`;
         }
 
         // --- 1. Gradient Background ---
@@ -146,6 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // RESPONSIVENESS TT~TT /////////////////////////////////////////////////
+    if(window.innerWidth < 820) {
+        document.querySelector('.recipient-name').innerHTML = `Swipe Left for Conversations`;
+    } else {
+        document.querySelector('.recipient-name').innerHTML = `Choose a Conversation`;
+    }
     document.querySelector('.messenger-container').style.height = `${window.innerHeight}px`;
     console.log("Height set", window.innerHeight);
     
@@ -179,10 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
         touchEndX = e.changedTouches[0].screenX;
         handleSwipeGesture();
     });
-
     function handleSwipeGesture() {
         const swipeDistance = touchStartX - touchEndX;
-
         if (swipeDistance > 50) { 
             if(leftPanel.classList.contains('open')) leftPanel.classList.remove('open');
         } else if (swipeDistance < -50) {
@@ -428,6 +436,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    if(changeUsernameButton) {
+        changeUsernameButton.addEventListener('click', () => {
+            changeUsernaameDialog();
+            document.getElementById('profile-dropdown').classList.remove('active');
+        });
+    }
+    const infoIcon = document.querySelector('#info-icon'); 
+    if(infoIcon) {
+        infoIcon.addEventListener('click', () => {
+            if(currentConvoId !== null)
+                openChangeThemeDialog(currentConvoId);
+        });
+    }
+
+
 
     // --- Example: New chat button ---
     const newChatButton = document.getElementById('new-chat-button');

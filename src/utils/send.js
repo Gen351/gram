@@ -1,13 +1,13 @@
 // src/send.js
-import { supabase } from './supabase/supabaseClient.js';
+import { supabase } from '../supabase/supabaseClient.js';
 import { scrollDown,
         hideReplyContent,
         removeReply
-        } from './updateMessage.js';
+        } from '../updateMessage.js';
 
 import { getReplyContext,
         removeReplyToContextFromCache
-        } from './utils/cache.js';
+        } from '../utils/cache.js';
 
 // These will be set by main.js whenever a conversation is opened:
 let currentConversationId = null;

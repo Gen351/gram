@@ -2,6 +2,8 @@
 
 import { supabase } from './supabase/supabaseClient.js';
 
+import { drawStaticBackground, wallpaperParse } from './wallpaperParser.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     // const authForm = document.getElementById('auth-form');
     const emailInput = document.getElementById('email');
@@ -15,6 +17,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // State to track if we are in login mode (true) or signup mode (false)
     let isLoginMode = true; // Default to login mode
 
+    (async () => {
+        const canvas = document.querySelector('#bg');
+        const parsed = await wallpaperParse('space');
+        const wallpaperImage = parsed.wallpaperImage;
+        const color_scheme = parsed.colors;
+        
+        wallpaperImage.onload = async () => {
+            await drawStaticBackground(wallpaperImage, color_scheme, canvas);
+        };
+        wallpaperImage.onerror = () => {
+            console.error("Failed to load the wallpaper image.");
+        };
+        
+        // Manually trigger in case the image was cached
+        if (wallpaperImage.complete) await drawStaticBackground(wallpaperImage, color_scheme, canvas);;
+        
+        window.addEventListener('resize', async () => await drawStaticBackground(wallpaperImage, color_scheme, canvas));
+    })();
+
+
+
     // Function to display messages to the user
     function displayMessage(message, isError = false) {
         authMessage.textContent = message;
@@ -24,13 +47,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to update UI based on current mode
     function updateAuthModeUI() {
         if (isLoginMode) {
-            formSubtitle.textContent = 'Sign in to your account';
+            formSubtitle.textContent = 'Sign in';
             authBtn.textContent = 'Sign In';
             togglePrompt.textContent = "Don't have an account?";
             toggleAuthModeBtn.textContent = 'Sign Up';
             document.querySelector('#authBtn').style.backgroundColor = '#2a9d8f';
         } else {
-            formSubtitle.textContent = 'Create a new account';
+            formSubtitle.textContent = 'Create an account';
             authBtn.textContent = 'Sign Up';
             togglePrompt.textContent = "Already have an account?";
             toggleAuthModeBtn.textContent = 'Sign In';

@@ -23,8 +23,10 @@ import { fetchProfile,
         } from './supabase/queryFunctions.js';
 
 import { wallpaperParse,
-        openChangeThemeDialog
+        drawStaticBackground,
         } from './wallpaperParser.js'; 
+
+import { openChangeThemeDialog } from './utils/bg.js';
 
 import { addMessageToCache, 
         session_conversations 
@@ -85,67 +87,24 @@ function initializeUserChannel(userId) {
 document.addEventListener('DOMContentLoaded', () => {
     
     // SETUP WALLPAPER ///////////////////////////////////////
-    canvas = document.getElementById('message-area-bg');
     (async () => {
+        canvas = document.getElementById('message-area-bg');
         const parsed = await wallpaperParse('late_night_delight');
         wallpaperImage = parsed.wallpaperImage;
         color_scheme = parsed.colors;
         
-        wallpaperImage.onload = () => {
-            drawStaticBackground(color_scheme);
+        wallpaperImage.onload = async () => {
+            await drawStaticBackground(wallpaperImage, color_scheme, canvas);
         };
         wallpaperImage.onerror = () => {
             console.error("Failed to load the wallpaper image.");
         };
         
         // Manually trigger in case the image was cached
-        if (wallpaperImage.complete) drawStaticBackground(color_scheme);
+        if (wallpaperImage.complete) await drawStaticBackground(wallpaperImage, color_scheme, canvas);;
         
-        window.addEventListener('resize', () => drawStaticBackground(color_scheme));
+        window.addEventListener('resize', async () => await drawStaticBackground(wallpaperImage, color_scheme, canvas));
     })();
-    
-    function drawStaticBackground(color_scheme) {
-        const ctx = canvas.getContext('2d');
-        // Fullscreen canvas
-        if(window.innerWidth < 820) {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        } else {
-            canvas.width = 2140 / 1.75;
-            canvas.height = 3840 / 1.75;
-        }
-
-        // --- 1. Gradient Background ---
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, color_scheme.a);
-        gradient.addColorStop(0.12, color_scheme.b);
-        gradient.addColorStop(0.66, color_scheme.c);
-        gradient.addColorStop(0.77, color_scheme.d);
-        gradient.addColorStop(1, color_scheme.e);
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        // --- 2. Draw smaller, manually repeated SVG ---
-        if (wallpaperImage.complete && wallpaperImage.naturalWidth > 0) {
-            const patternSize = 400;
-            const scale = patternSize / wallpaperImage.naturalWidth;
-            const patternHeight = wallpaperImage.naturalHeight * scale;
-
-            ctx.save();
-            ctx.globalAlpha = 1;
-            for (let y = 0; y < canvas.height; y += patternHeight) {
-                for (let x = 0; x < canvas.width; x += patternSize) {
-                    ctx.drawImage(wallpaperImage, x, y, patternSize, patternHeight);
-                }
-            }
-            ctx.restore();
-        }
-        // --- 3. Optional overlay for depth ---
-        const overlay = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        overlay.addColorStop(0, 'rgba(0, 0, 0, 0.05)');
-        overlay.addColorStop(1, 'rgba(0, 0, 0, 0.25)');
-        ctx.fillStyle = overlay;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
     // SETUP WALLPAPER ///////////////////////////////////////
     //////////////////////////////////////////////////////////
 

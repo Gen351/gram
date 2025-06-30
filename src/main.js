@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 initializeUserChannel(currentSessionUserId);
 
                 // Fetch user profile to display the initial and get profile_id
-                const profileData = await loadUserProfile(currentSessionUserId, session.user.email);
+                const profileData = await loadUserProfile(currentSessionUserId);
 
                 if (profileData && profileData.id) {
                     currentSessionProfileId = profileData.id; // Assign the profile ID correctly
@@ -197,8 +197,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         
     // --- Dashboard loading functions ---
-    async function loadUserProfile(userId, userEmail) {
+    async function loadUserProfile(userId, username = null) {
         if (!profilePicContainer || !profileInitialSpan) return null;
+
+        if(username === null) {
+            username = 'RANDOM';
+        }
 
         try {
             // Try to fetch existing profile
@@ -210,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (profileData.code === 'PGRST116') {
                 // Not found, so create
                 console.log("Profile not found for user, creating a new one.");
-                data = await createProfile(userId, userEmail);
+                data = await createProfile(userId, username);
                 console.log("New profile created:", data);
             } else { // Some other error
                 throw profileData;
@@ -219,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Display the initial (first letter of username or email)
             const initial = data.username
                 ? data.username.charAt(0).toUpperCase()
-                : (userEmail.charAt(0).toUpperCase() || '?');
+                : (username.charAt(0).toUpperCase() || '?');
 
             profileInitialSpan.textContent = initial;
             profilePicContainer.innerHTML = `
@@ -237,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error('Error fetching or creating user profile:', err.message || err);
             // Fallback initial
-            const fallback = userEmail ? userEmail.charAt(0).toUpperCase() : '?';
+            const fallback = username ? username.charAt(0).toUpperCase() : '?';
             profileInitialSpan.textContent = fallback;
             profilePicContainer.style.backgroundImage = '';
             return null;

@@ -24,6 +24,8 @@ body {
     min-height: 100vh;
     background-color: var(--primary-color); /* Use primary color for background */
     color: var(--text-dark);
+
+    font-family: "Comic Neue", cursive;
 }
 
 .login-container {

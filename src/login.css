@@ -1,7 +1,7 @@
 :root {
     --primary-color: #3A3B3C; /* Teal/Green */
     --accent-color: #e9c46a; /* Yellow/Orange */
-    --text-dark: #E4E6EB;
+    --text-dark: #000000;
     --text-light: #f4f4f4;
     --background-light: rgb(88, 88, 88)B3C;
     --background-dark: #18191A;
@@ -12,6 +12,7 @@
 
 * {
     font-family: "Comic Neue", cursive;
+    color: var(--text-dark);
 }
 
 body {

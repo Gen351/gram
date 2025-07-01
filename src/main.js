@@ -32,7 +32,9 @@ import { addMessageToCache,
         session_conversations 
         } from './utils/cache.js';
 
-import { changeUsernaameDialog } from './utils/profile.js';
+import { changeUsernaameDialog,
+        loadUserProfile
+        } from './utils/profile.js';
 
 import { playNewMessageSound } from './utils/sounds.js';
 
@@ -45,7 +47,6 @@ let color_scheme;
 ////////////////////////////////////////////
 // Global variables for DOM elements and session data
 const profilePicContainer = document.getElementById('profilePicContainer');
-const profileInitialSpan = document.getElementById('profile-initial');
 const profileDropdown = document.getElementById('profile-dropdown');
 const logoutButton = document.getElementById('logout-button');
 const changeUsernameButton = document.getElementById('change-username-button');
@@ -164,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(async ({ data: { session }, error: sessionError }) => {
             if (sessionError) {
                 console.error("Error getting session:", sessionError.message);
+                alert("Error getting session:", sessionError.message);
                 window.location.href = '/index.html'; // Redirect to login on error
                 return;
             }
@@ -187,66 +189,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     await loadConversations(currentSessionUserId); // Pass the auth.users.id
                 } else {
                     console.error("Could not retrieve profile ID for the session.");
+                    alert("Could not retrieve profile ID for the session.");
                 }
             }
         })
         .catch(criticalError => {
             console.error("Critical error during session check:", criticalError.message);
+            alert("Critical error during session check:", criticalError.message);
             window.location.href = '/index.html';
         });
 
         
     // --- Dashboard loading functions ---
-    async function loadUserProfile(userId, username = null) {
-        if (!profilePicContainer || !profileInitialSpan) return null;
-
-        if(username === null) {
-            username = 'RANDOM';
-        }
-
-        try {
-            // Try to fetch existing profile
-            const profileData = await fetchProfile(userId);
-
-            let data;
-            if (profileData.id) { // Found
-                data = profileData;
-            } else if (profileData.code === 'PGRST116') {
-                // Not found, so create
-                console.log("Profile not found for user, creating a new one.");
-                data = await createProfile(userId, username);
-                console.log("New profile created:", data);
-            } else { // Some other error
-                throw profileData;
-            }
-
-            // Display the initial (first letter of username or email)
-            const initial = data.username
-                ? data.username.charAt(0).toUpperCase()
-                : (username.charAt(0).toUpperCase() || '?');
-
-            profileInitialSpan.textContent = initial;
-            profilePicContainer.innerHTML = `
-                <img src="https://ui-avatars.com/api/?name=${data.username}
-                    &size=45
-                    &background=${data.username.charCodeAt(0) * 6500}
-                    &color=${data.username.charCodeAt(data.username.length - 1) * 900}
-                    &length=3
-                    &rounded=true
-                    &bold=true
-                ">
-            `;
-
-            return data;
-        } catch (err) {
-            console.error('Error fetching or creating user profile:', err.message || err);
-            // Fallback initial
-            const fallback = username ? username.charAt(0).toUpperCase() : '?';
-            profileInitialSpan.textContent = fallback;
-            profilePicContainer.style.backgroundImage = '';
-            return null;
-        }
-    }
 
     // New function to fetch conversations based on the new schema
     async function loadConversationsForUser(userId) {

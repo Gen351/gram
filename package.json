@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.8",
+    "bcryptjs": "^3.0.2",
     "twallpaper": "^2.1.2"
   }
 }

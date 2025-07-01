@@ -1,5 +1,4 @@
 // src/login.js
-
 import { supabase } from './supabase/supabaseClient.js';
 
 import { drawStaticBackground, wallpaperParse } from './wallpaperParser.js';
@@ -13,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const formSubtitle = document.getElementById('form-subtitle');
     const toggleAuthModeBtn = document.getElementById('toggleAuthModeBtn');
     const togglePrompt = document.getElementById('toggle-prompt');
+    const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
 
     // State to track if we are in login mode (true) or signup mode (false)
     let isLoginMode = true; // Default to login mode
@@ -178,6 +178,49 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    forgotPasswordBtn.addEventListener('click', () => {
+        const email = emailInput.value.trim();
+
+        // UI changes to focus only on email input
+        passwordInput.disabled = true;
+        passwordInput.style.opacity = '0.4';
+        passwordInput.placeholder = 'Disabled during reset';
+        authBtn.style.display = 'none'; // hide Sign In/Up button
+
+        forgotPasswordBtn.disabled = true; // prevent multiple clicks
+        forgotPasswordBtn.textContent = 'Sending...';
+
+        if (!email) {
+            displayMessage('Please enter your email first.', true);
+            resetForgotUI(); // restore UI
+            return;
+        }
+
+        // Send reset request
+        supabase.auth.resetPasswordForEmail(email).then(({ error }) => {
+            if (error) {
+                displayMessage(error.message, true);
+            } else {
+                displayMessage('Password reset link sent! Check your inbox.', false);
+            }
+            resetForgotUI(); // restore UI after action
+        }).catch((err) => {
+            displayMessage('Unexpected error. Try again later.', true);
+            resetForgotUI();
+        });
+    });
+
+    // Helper to reset UI back to normal mode
+    function resetForgotUI() {
+        passwordInput.disabled = false;
+        passwordInput.style.opacity = '1';
+        passwordInput.placeholder = 'Password123';
+        authBtn.style.display = 'block';
+        forgotPasswordBtn.disabled = false;
+        forgotPasswordBtn.textContent = 'Forgot Password?';
+    }
+
 
     // Toggle authentication mode
     toggleAuthModeBtn.addEventListener('click', () => {

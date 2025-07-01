@@ -144,6 +144,10 @@ body {
     -webkit-text-stroke: 2px black;
 }
 
+input:disabled {
+    background-color: #e0e0e0;
+    cursor: not-allowed;
+}
 
 .auth-message {
     margin-top: 20px;

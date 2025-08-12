@@ -3,7 +3,7 @@ import { supabase } from '../supabase/supabaseClient.js';
 import { scrollDown,
         hideReplyContent,
         removeReply
-        } from '../updateMessage.js';
+        } from './message.js';
 
 import { getReplyContext,
         removeReplyToContextFromCache

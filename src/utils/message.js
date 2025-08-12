@@ -1,13 +1,13 @@
 import {toggleLike,
         setMessageToDeleted
-        } from './supabase/queryFunctions.js';
+        } from '../supabase/queryFunctions.js';
 
 import { cacheLikedMessage,
         cacheUnlikedMessage,
         cacheDeletedMessage,
         setReplyToContextFromCache,
         removeReplyToContextFromCache
-        } from './utils/cache.js';
+        } from './cache.js';
 
 const messageArea = document.querySelector('.message-area');
 

@@ -73,9 +73,14 @@
                     <button class="icon-button" id="search-icon">
                         <i class="fi fi-br-search"></i>
                     </button>
-                    <button class="icon-button" id="info-icon">
+                    <button class="icon-button" id="info-icon" data-convo-id="">
                         <i class="fi fi-br-info"></i>
                     </button>
+                    <!-- CHAT info dropdown -->
+                    <div id="chat-info-dropdown" class="dropdown-menu">
+                        <button id="change-chat-name-btn">Change Chat Name</button>
+                        <button id="delete-chat-btn">Delete Chat</button>
+                    </div>
                 </div>
             </div>
             
@@ -116,7 +121,8 @@
         </div>
     </div>
 
-
+    <!-- CHAT theme dialog -->
+    <!-- NOT IN USE -->
     <div id="changeTheme" class="modal-overlay">
         <div class="theme-dialog">
             <h2>Change Theme</h2>
@@ -141,6 +147,23 @@
         </div>
     </div>
 
+    <!-- For changing the chat name -->
+    <div id="change-chat-name-dialog" class="modal-overlay">
+        <div class="username-dialog">
+            <h2>Change Chat Name</h2>
+            <div class="input-group">
+                <label for="newChatNameInput">New Name</label>
+                <input type="text" id="newChatNameInput" placeholder="Enter new chat name" maxlength="20">
+                <small id="newChatNameError" class="error-message"></small>
+            </div>
+            <div class="dialog-actions">
+                <button id="saveChatNameChange" class="primary-btn"></button>
+                <button id="cancelChatNameChange" class="secondary-btn"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- For changing the username -->
     <div id="changeUsernameDialog" class="modal-overlay">
         <div class="username-dialog">
             <h2>Change Username</h2>

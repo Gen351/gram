@@ -293,7 +293,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    z-index: 2000; /* Higher z-index to ensure it's on top */
+    z-index: 5000; /* Higher z-index to ensure it's on top */
     min-width: 180px; /* More generous width */
     overflow: hidden; /* For rounded corners on content */
     opacity: 0; /* For fade-in effect */
@@ -324,6 +324,11 @@ body {
 
 .dropdown-menu button:hover {
     background-color: var(--border-color);
+}
+
+.header-actions .dropdown-menu {
+    left: -100%;
+    z-index: 5000;
 }
 
 /* Search Bar */
@@ -519,7 +524,7 @@ body {
     background-color: var(--bg-secondary);
     flex-shrink: 0;
     max-height: 75px;
-    z-index: 1;
+    z-index: 5000;
 }
 
 .conversation-header .recipient-info {
@@ -549,6 +554,7 @@ body {
 
 .conversation-header .header-actions {
     display: flex;
+    position: relative;
     gap: 8px; /* More space between actions */
 }
 
@@ -611,6 +617,7 @@ body {
     position: relative;
     display: flex;
     flex-direction: column;
+    z-index: 1;
     min-width: 0; /* Prevents flexbox overflow issues */
 }
 

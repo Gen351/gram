@@ -36,6 +36,7 @@ import { changeUsernaameDialog,
         } from './utils/profile.js';
 
 import './utils/convoInfoDropdown.js';
+import './utils/messageListener.js';
 
 import { playNewMessageSound } from './utils/sounds.js';
 
@@ -85,6 +86,7 @@ function initializeUserChannel(userId) {
         })
         .subscribe();
 
+        
     
 }
 

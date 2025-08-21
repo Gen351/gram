@@ -524,7 +524,7 @@ body {
     background-color: var(--bg-secondary);
     flex-shrink: 0;
     max-height: 75px;
-    z-index: 5000;
+    z-index: 1;
 }
 
 .conversation-header .recipient-info {

@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let touchStartX = 0;
     let isSwiping = false;
     let open = false;
-    const panelWidth = leftPanel.clientWidth;
     document.addEventListener('touchstart', (e) => {
         touchStartX = e.targetTouches[0].clientX;
         isSwiping = true;
@@ -37,12 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const dist = e.targetTouches[0].clientX - touchStartX;
 
         // Prevent dragging too far
-        if (open && dist < -panelWidth) return;
-        if (!open && dist > panelWidth) return;
+        if (open && dist < -leftPanel.clientWidth) return;
+        if (!open && dist > leftPanel.clientWidth) return;
 
         // Calculate target position
-        const offset = open ? panelWidth + dist : dist;
-        const clampedOffset = Math.max(0, Math.min(panelWidth, offset));
+        const offset = open ? leftPanel.clientWidth + dist : dist;
+        const clampedOffset = Math.max(0, Math.min(leftPanel.clientWidth, offset));
         leftPanel.style.left = `${clampedOffset}px`;
     });
 
@@ -53,14 +52,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dist > 100) {
             // Open panel
             open = true;
-            leftPanel.style.left = `${panelWidth}px`;
+            leftPanel.style.left = `${leftPanel.clientWidth}px`;
         } else if (dist < -100) {
             // Close panel
             open = false;
             leftPanel.style.left = `0px`;
         } else {
             // Snap back to current state
-            leftPanel.style.left = open ? `${panelWidth}px` : `0px`;
+            leftPanel.style.left = open ? `${leftPanel.clientWidth}px` : `0px`;
         }
     });
 });

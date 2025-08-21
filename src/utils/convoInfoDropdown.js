@@ -17,7 +17,7 @@ if(chatInfoDropdown) {
             if(confirmDelete) {
                 const convoId = document.getElementById('info-icon').dataset.convoId;
                 if(convoId) {
-                    console.log('Deleted...(Still not because I said so...(NOT DONE BUILDING))')
+                    console.log('NOT Deleted...(because I said so...(NOT DONE BUILDING))')
                     // DELETE_conversation(convoId);
                 }
             }

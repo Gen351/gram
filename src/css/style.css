@@ -416,7 +416,7 @@ body {
     flex-grow: 1;
     padding: 10px;
     overflow-y: auto;
-    display: block;
+    display: flex;
     flex-direction: column;
     gap: 5px;
 

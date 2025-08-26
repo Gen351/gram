@@ -1,0 +1,9 @@
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    flex-grow: 1;
+    background-color: var(--bg-primary); /* Main chat background */
+    
+    z-index: 1;
+}

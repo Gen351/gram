@@ -1,0 +1,141 @@
+/* --- Left Panel (Chat List) --- */
+.left-panel {
+    flex: 0 0 350px;
+    min-width: 280px;
+    max-width: 300px;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-secondary);
+
+    z-index: 2;
+
+    transition: 0.5s;
+}
+.left-panel .header {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border-color);
+
+    max-height: 75px;
+}
+
+/* Profile Picture & Dropdown */
+.left-panel .header .profile-pic {
+    position: relative; /* Crucial: Establishes positioning context for absolute dropdown */
+    width: 50px;
+    height: 50px;
+    background-color: var(--bg-tertiary); /* Default background for initials */
+    color: var(--text-light);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    overflow: hidden; /* Ensures initials stay within circle */
+}
+
+.left-panel .header .profile-pic .dropdown-menu {
+    overflow: visible;
+}
+.left-panel .header .profile-pic.active-dropdown {
+    overflow: visible; /* when toggled, allow children to show */
+}
+
+.left-panel .header .profile-pic:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px var(--accent-primary-hover);
+}
+
+.dropdown-menu {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: calc(100% + 10px); /* Position 10px below profile pic */
+    left: 0; /* Align to the left of the profile pic */
+    background-color: var(--bg-primary); /* Darker background for dropdown */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    z-index: 5000; /* Higher z-index to ensure it's on top */
+    min-width: 180px; /* More generous width */
+    overflow: hidden; /* For rounded corners on content */
+    opacity: 0; /* For fade-in effect */
+    transform: translateY(-10px); /* For slide-down effect */
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+    pointer-events: none; /* Prevents interaction when hidden */
+}
+
+.dropdown-menu.active {
+    display: block; /* Make it block to enable transitions */
+    opacity: 1; /* Fade in */
+    transform: translateY(0); /* Slide down */
+    pointer-events: all; /* Allow interaction */
+}
+
+.dropdown-menu button {
+    display: block;
+    width: 100%;
+    padding: 12px 15px; /* More padding for better click area */
+    text-align: left;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1em;
+    color: var(--text-light);
+    transition: background-color 0.15s ease;
+}
+
+.dropdown-menu button:hover {
+    background-color: var(--border-color);
+}
+
+.header-actions .dropdown-menu {
+    left: -100%;
+    z-index: 5000;
+}
+
+/* Search Bar */
+.left-panel .header .search-things {
+    flex-grow: 1;
+}
+
+.search-results {
+    display: none; /* Hidden by default */
+    position: absolute;
+    background-color: var(--bg-primary); /* Darker background for dropdown */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    z-index: 2000; /* Higher z-index to ensure it's on top */
+    overflow: visible; /* For rounded corners on content */
+    opacity: 1; /* For fade-in effect */
+    transform: translateY(-10px); /* For slide-down effect */
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+    pointer-events: all; /* Prevents interaction when hidden */
+}
+
+.left-panel .header .search-bar input {
+    width: 100%;
+    padding: 10px 18px; /* More padding for larger touch target */
+    border: none;
+    border-radius: var(--border-radius-lg); /* More rounded */
+    background-color: var(--bg-tertiary);
+    color: var(--text-light);
+    font-size: 0.95em;
+    outline: none;
+}
+
+.left-panel .header .search-bar input::placeholder {
+    color: var(--text-dark);
+}
+
+/* Header Actions (Settings, New Chat) */
+.left-panel .header .actions {
+    display: flex;
+    gap: 5px;
+}

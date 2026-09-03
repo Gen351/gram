@@ -72,10 +72,8 @@ function initializeUserChannel(userId) {
     supaChannel
         .on('broadcast', { event: 'new-message' }, ({ payload }) => {
             if (payload.type === 'insert') {
+                if (payload.message.to === currentSessionUserId) playNewMessageSound();
                 appendLatestMessage(payload.message, userId, currentConvoId);
-                if (payload.message.to === currentSessionUserId) {
-                    playNewMessageSound();
-                }
                 setLatestMessage(payload.message, true);
                 addMessageToCache(currentConvoId, payload.message);
 
@@ -316,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (error) {
                     console.error('Error logging out:', error.message);
                     alert('Logout failed: ' + error.message);
+                    window.location.href = '/index.html';
                 } else {
                     console.log('User logged out successfully.');
                     window.location.href = '/index.html';

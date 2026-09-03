@@ -164,7 +164,7 @@ export async function toggleLike(isLiked, msgId, receiverId) {
         .select()
         .single();
 
-    if (updateError || !updated) { 
+    if (updateError || !updated) {
         console.error('Failed to update liked state:', updateError);
         return false;
     }
@@ -202,7 +202,7 @@ export async function setMessageToDeleted(msgId, receiverId) {
             type: 'broadcast',
             event: 'new-message',
             payload: {
-                type: 'update',
+                type: 'message-delete',
                 message: updated,
             }
         });

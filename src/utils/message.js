@@ -18,6 +18,7 @@ export async function updateMessage(message, date = ""/* magamit siguro sunod */
     if (!messageElement) return;
 
     if(message.deleted) {
+        // update on reply bubbles
         const replyTexts = document.querySelectorAll(`.reply-text[data-msg-id="${message.id}"]`);
         if(replyTexts) {
             replyTexts.forEach(replyElement => {
@@ -26,6 +27,7 @@ export async function updateMessage(message, date = ""/* magamit siguro sunod */
             });
         }
 
+        // update the message bubble
         messageElement.innerHTML = `
             <div class="message-bubble">
                 <div class="message-content">-- message deleted --</div>
@@ -34,6 +36,12 @@ export async function updateMessage(message, date = ""/* magamit siguro sunod */
             </div>
         `;
         messageElement.querySelector('.message-content').classList.add('deleted');
+
+        // update on the chatlist
+        const messageElementOnChatList = document.querySelector(`.last-message[data-msg-id="${message.id}"]`);
+        
+        messageElementOnChatList.classList.add('deleted');
+
         return;
     }
 
@@ -192,11 +200,11 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
             const cache = isLiked ? cacheUnlikedMessage : cacheLikedMessage;
 
             cache(message.conversation_id, message.id);
+            // Like the message (UI change)
             toggle[1](message.id);
 
-            const broadcastRreceiver = currentSessionUserId === message.from ? message.to : message.from;
-
-            const success = await toggleLike(isLiked, message.id, broadcastRreceiver);
+            const broadcastReceiver = currentSessionUserId === message.from ? message.to : message.from;
+            const success = await toggleLike(isLiked, message.id, broadcastReceiver);
 
             if (!success) {
                 const revertCache = isLiked ? cacheLikedMessage : cacheUnlikedMessage;
@@ -280,6 +288,9 @@ export async function setLatestMessage(message, isAllowed = false) {
             latest.querySelector('.last-message').innerHTML = '-- message deleted --';
             latest.querySelector('.last-message').dataset.msgId = message.id;
         } else {
+            if(latest.querySelector('.last-message').classList.contains('deleted')) {
+                latest.querySelector('.last-message').classList.remove('deleted');
+            }
             latest.querySelector('.last-message').innerHTML = message.contents;
             latest.querySelector('.last-message').dataset.msgId = message.id;
         }
@@ -314,6 +325,7 @@ export async function setMessageElementToDeleted(msgId, receiverId, senderId) {
         // set it to deleted in DB, if it's deleted, set all messages to deleted
         const success = await setMessageToDeleted(msgId, receiverId, senderId);
         if(success) {
+            // update UI on replies
             const replyTexts = document.querySelectorAll(`.reply-text[data-msg-id="${msgId}"]`);
             if(replyTexts) {
                 replyTexts.forEach(replyElement => {
@@ -322,6 +334,7 @@ export async function setMessageElementToDeleted(msgId, receiverId, senderId) {
                 });
             }
 
+            // update UI on the message bubble itself
             messageElement.innerHTML = `
                 <div class="message-bubble">
                     <div class="message-content deleted">-- message deleted --</div>
@@ -329,6 +342,10 @@ export async function setMessageElementToDeleted(msgId, receiverId, senderId) {
                     </div>
                 </div>
             `;
+
+            const messageElementOnChatList = document.querySelector(`.last-message[data-msg-id="${msgId}"]`);
+            messageElementOnChatList.classList.add('deleted');
+            messageElementOnChatList.innerHTML = `-- message deleted --`;
 
             return true;
         } else {

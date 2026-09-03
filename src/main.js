@@ -80,6 +80,8 @@ function initializeUserChannel(userId) {
             } else if (payload.type === 'update') {
                 // Target UI element and update its DOM/heart icon
                 updateMessage(payload.message);
+            } else if(payload.type === 'message-delete') {
+                updateMessage(payload.message);
             } else {
                 console.log("Unknown broadcast type");
             }

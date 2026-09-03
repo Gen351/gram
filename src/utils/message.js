@@ -194,7 +194,9 @@ export async function loadMessage(message, currentSessionUserId, currentConvoId,
             cache(message.conversation_id, message.id);
             toggle[1](message.id);
 
-            const success = await toggleLike(isLiked, message.id, message.to, message.from);
+            const receiver = session.user.id == message.to ? message.to : message.from;
+
+            const success = await toggleLike(isLiked, message.id, receiver);
 
             if (!success) {
                 const revertCache = isLiked ? cacheLikedMessage : cacheUnlikedMessage;

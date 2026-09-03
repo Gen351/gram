@@ -154,7 +154,7 @@ export async function fetchMessages(conversationId) {
 }
 
 
-export async function toggleLike(isLiked, msgId, receiverId, senderId) {
+export async function toggleLike(isLiked, msgId, receiverId) {
     const newState = isLiked ? 'empty' : 'liked';
 
     const { data: updated, error: updateError } = await supabase
@@ -169,21 +169,16 @@ export async function toggleLike(isLiked, msgId, receiverId, senderId) {
         return false;
     }
 
-    // Broadcast directly to the target receiver's dedicated channel
-    const targetChannel = supabase.channel(`user-${receiverId}`);
-
-    targetChannel.subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-            targetChannel.send({
-                type: 'broadcast',
-                event: 'new-message',
-                payload: {
-                    type: 'update',
-                    message: updated,
-                }
-            });
-        }
-    });
+    // Broadcast it to the other participant
+    await supabase.channel(`user-${receiverId}`)
+        .send({
+            type: 'broadcast',
+            event: 'new-message',
+            payload: {
+                type: 'update',
+                message: updated,
+            }
+        });
 
     return true;
 }

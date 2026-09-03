@@ -73,11 +73,12 @@ function initializeUserChannel(userId) {
         .on('broadcast', { event: 'new-message' }, ({ payload }) => {
             if (payload.type === 'insert') {
                 appendLatestMessage(payload.message, userId, currentConvoId);
-                setLatestMessage(payload.message, true);
-                addMessageToCache(currentConvoId, payload.message);
                 if(payload.message.to == currentSessionUserId) {
                     playNewMessageSound();
                 }
+                setLatestMessage(payload.message, true);
+                addMessageToCache(currentConvoId, payload.message);
+
             } else if (payload.type === 'update') {
                 updateMessage(payload.message);
             } else {

@@ -170,7 +170,7 @@ export async function toggleLike(isLiked, msgId, receiverId, senderId) {
     }
 
     // Broadcast it to the other participant
-    await supabase.channel(`user-${receiverId}`)
+    await supabase.channel(`user-${senderId}`)
         .send({
             type: 'broadcast',
             event: 'new-message',

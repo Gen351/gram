@@ -154,7 +154,7 @@ export async function fetchMessages(conversationId) {
 }
 
 
-export async function toggleLike(isLiked, msgId, receiverId) {
+export async function toggleLike(isLiked, msgId, receiverId, senderId) {
     const newState = isLiked ? 'empty' : 'liked';
 
     const { data: updated, error: updateError } = await supabase
@@ -170,7 +170,7 @@ export async function toggleLike(isLiked, msgId, receiverId) {
     }
 
     // Broadcast it to the other participant
-    await supabase.channel(`user-${receiverId}`)
+    await supabase.channel(`user-${receiverId}`, `user-${senderId}`)
         .send({
             type: 'broadcast',
             event: 'new-message',

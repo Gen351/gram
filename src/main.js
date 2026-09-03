@@ -73,23 +73,25 @@ function initializeUserChannel(userId) {
         .on('broadcast', { event: 'new-message' }, ({ payload }) => {
             if (payload.type === 'insert') {
                 appendLatestMessage(payload.message, userId, currentConvoId);
-                if(payload.message.to == currentSessionUserId) {
+                if (payload.message.to === currentSessionUserId) {
                     playNewMessageSound();
                 }
                 setLatestMessage(payload.message, true);
                 addMessageToCache(currentConvoId, payload.message);
 
             } else if (payload.type === 'update') {
+                // Target UI element and update its DOM/heart icon
                 updateMessage(payload.message);
             } else {
                 console.log("Unknown broadcast type");
             }
         })
         .subscribe();
-
-        
-    
 }
+
+// Message Listener
+
+
 
 
 // async function addAConvo

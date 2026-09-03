@@ -169,16 +169,21 @@ export async function toggleLike(isLiked, msgId, receiverId, senderId) {
         return false;
     }
 
-    // Broadcast it to the other participant
-    await supabase.channel(`user-${senderId}`)
-        .send({
-            type: 'broadcast',
-            event: 'new-message',
-            payload: {
-                type: 'update',
-                message: updated,
-            }
-        });
+    // Broadcast directly to the target receiver's dedicated channel
+    const targetChannel = supabase.channel(`user-${receiverId}`);
+
+    targetChannel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+            targetChannel.send({
+                type: 'broadcast',
+                event: 'new-message',
+                payload: {
+                    type: 'update',
+                    message: updated,
+                }
+            });
+        }
+    });
 
     return true;
 }
